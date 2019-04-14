@@ -1,0 +1,21 @@
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(377,5): warning MSB8004: Output 目录未以斜杠结尾。  此生成实例将添加斜杠，因为必须有这个斜杠才能正确计算 Output 目录。
+  正在生成代码
+  0 of 12 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
+  已完成代码的生成
+avformat.lib(dnwycs00101.o) : error LNK2026: 模块对于 SAFESEH 映像是不安全的。
+avformat.lib(dnwycs00111.o) : error LNK2026: 模块对于 SAFESEH 映像是不安全的。
+avformat.lib(dnwycs00060.o) : error LNK2026: 模块对于 SAFESEH 映像是不安全的。
+avformat.lib(dnwycs00079.o) : error LNK2026: 模块对于 SAFESEH 映像是不安全的。
+avformat.lib(dnwycs00084.o) : error LNK2026: 模块对于 SAFESEH 映像是不安全的。
+avformat.lib(dnwycs00107.o) : error LNK2026: 模块对于 SAFESEH 映像是不安全的。
+avformat.lib(dnwycs00126.o) : error LNK2026: 模块对于 SAFESEH 映像是不安全的。
+avformat.lib(dnwycs00100.o) : error LNK2026: 模块对于 SAFESEH 映像是不安全的。
+avformat.lib(dnwycs00008.o) : error LNK2026: 模块对于 SAFESEH 映像是不安全的。
+avformat.lib(dnwycs00080.o) : error LNK2026: 模块对于 SAFESEH 映像是不安全的。
+avcodec.lib(drrycs00175.o) : error LNK2026: 模块对于 SAFESEH 映像是不安全的。
+avcodec.lib(drrycs00103.o) : error LNK2026: 模块对于 SAFESEH 映像是不安全的。
+avutil.lib(dvlxcs00448.o) : error LNK2026: 模块对于 SAFESEH 映像是不安全的。
+avutil.lib(dvlxcs00410.o) : error LNK2026: 模块对于 SAFESEH 映像是不安全的。
+..\test_bin\win32\mp4_to_wmv.exe : fatal error LNK1281: 无法生成 SAFESEH 映像。
