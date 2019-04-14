@@ -12,13 +12,13 @@ ScreenRecord::ScreenRecord(QWidget *parent)
 {
     ui.setupUi(this);
     
-    ct = new VideoCapture();
-    //ct->init(VideoCapture::VID_CAP_MODE_DIRECTX);
-    ct->init(VideoCapture::VID_CAP_MODE_DIRECTX);
-    ct->startCapture();
-
+    ct = new VideoCapture(VideoCapture::VID_CAP_MODE_DIRECTX, 25);
+    if (ct->init())
+    {
+        ct->startCapture();
+    }
     // 测试代码
-    startTimer(100);
+    startTimer(1000 / 25);
 }
 
 // qt定时器是信号槽实现，不能做高复杂时间度的操作

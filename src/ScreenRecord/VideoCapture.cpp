@@ -1,10 +1,10 @@
 #include "VideoCapture.h"
 #include "glog/logging.h"
 
-#include <QApplication>
-#include <QGuiApplication> 
-#include <QDesktopWidget> 
-#include <QScreen>
+//#include <QApplication>
+//#include <QGuiApplication> 
+//#include <QDesktopWidget> 
+//#include <QScreen>
 #include <QTime>
 
 #include <iostream>
@@ -19,34 +19,30 @@ const char *VideoCapture::VidCapModeStr(VidCapMode mode)
         "DirectX",
         "QT"
     };
-    if (mode > VID_CAP_MODE_NONE && mode < VID_CAP_MODE_CNT)
-    {
+    if (mode > VID_CAP_MODE_NONE && mode < VID_CAP_MODE_CNT) {
         return str[mode];
-    }
-    else
-    {
+    } else {
         return str[VID_CAP_MODE_NONE];
     }
 }
 
-VideoCapture::VideoCapture()
-{  
+VideoCapture::VideoCapture(VidCapMode mode, int fps) : m_mode(mode), m_fps(fps)
+{
 }
 
 VideoCapture::~VideoCapture()
 {
 }
 
-bool VideoCapture::init(VidCapMode mode)
+bool VideoCapture::init()
 {
     if (m_init)
     {
         LOG(WARNING) << "VideoCapture is already inited";
-        return false;
+        return true;
     }
-    LOG(INFO) << "set capture mode:" << VidCapModeStr(mode);
 
-    if (VID_CAP_MODE_DIRECTX == mode)
+    if (VID_CAP_MODE_DIRECTX == m_mode)
     {
         // 1.创建directx3d对象
         m_d3d = Direct3DCreate9(D3D_SDK_VERSION);
@@ -86,9 +82,9 @@ bool VideoCapture::init(VidCapMode mode)
         m_rect = new D3DLOCKED_RECT();
         ZeroMemory(m_rect, sizeof(*m_rect));
     }
-    else if (VID_CAP_MODE_QT == mode)
+    else if (VID_CAP_MODE_QT == m_mode)
     {
-        m_screen = QGuiApplication::primaryScreen();
+        //m_screen = QGuiApplication::primaryScreen();
         //m_width = m_screen->size().width();
         //m_height = m_screen->size().height();
     }
@@ -98,7 +94,6 @@ bool VideoCapture::init(VidCapMode mode)
     }
 
     m_mutex.lock();
-    m_capMode = mode;
     m_init = true;
     m_mutex.unlock();
 
@@ -119,6 +114,7 @@ void VideoCapture::run()
     QTime time;
     int ms_wait = 0;
     int fps_base = 1000 / m_fps;
+    int use_time = 0;
     void *data = nullptr;
 
     while (m_start)
@@ -134,8 +130,8 @@ void VideoCapture::run()
         }
         m_mutex.unlock();
 
-        data = new char[m_width * m_height * m_bitSize];
         // 获取一帧数据
+        data = new char[m_width * m_height * m_bitSize];
         if (!captureData(data))
         {
             delete data;
@@ -149,12 +145,13 @@ void VideoCapture::run()
         m_mutex.unlock();
 
         // 若抓取的帧率快于FPS,同步抓取的帧率
-        ms_wait = fps_base - time.restart();
+        use_time = time.restart();
+        ms_wait = fps_base - use_time;
         if (ms_wait > 0)
         {
             msleep(ms_wait);
         }
-        std::cout << '.';
+        std::cout << "fps_base:" << fps_base << " use:" << use_time << " ms_wait:" << ms_wait << std::endl;
     }
 }
 
@@ -166,11 +163,11 @@ bool VideoCapture::captureData(void *data)
         return false;
     }
 
-    if (VID_CAP_MODE_DIRECTX == m_capMode)
+    if (VID_CAP_MODE_DIRECTX == m_mode)
     {
         return captureWithDirectX(data);
     }
-    else if (VID_CAP_MODE_QT == m_capMode)
+    else if (VID_CAP_MODE_QT == m_mode)
     {
         return captureWithQt(data);
     }

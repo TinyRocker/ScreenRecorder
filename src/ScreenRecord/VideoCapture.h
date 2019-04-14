@@ -17,11 +17,10 @@ public:
     };
     static const char *VidCapModeStr(VidCapMode mode);
 
-    VideoCapture();
+    VideoCapture(VidCapMode mode, int fps);
     virtual ~VideoCapture();
 
-    virtual bool init() { return false; }
-    virtual bool init(VidCapMode mode);
+    virtual bool init();
     virtual bool uninit();
 
     int width() const { return m_width; }
@@ -29,7 +28,6 @@ public:
     int fps() const { return m_fps; }
 
 protected:
-    //bool captureScreen(void *data, int width, int height, int bitsize);
     virtual void run();
     virtual bool captureData(void *data);
     
@@ -39,7 +37,7 @@ private:
 
 private:
     
-    VidCapMode          m_capMode = VID_CAP_MODE_DIRECTX;
+    VidCapMode          m_mode = VID_CAP_MODE_DIRECTX;
     
     // DirectX 9
     IDirect3D9          *m_d3d = nullptr;       // directx3d ∂‘œÛ

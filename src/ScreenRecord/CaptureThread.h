@@ -13,7 +13,7 @@ public:
 
     virtual bool startCapture();
     virtual bool stopCapture();
-    virtual void *getData();
+    virtual void *getData();    //线程安全,返回的空间由用户释放
 protected:
     CaptureThread();
 
