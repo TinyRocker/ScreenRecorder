@@ -1,5 +1,6 @@
 #pragma once
 #include "CaptureThread.h"
+#include "MediaFormat.h"
 #include <d3d9.h>
 
 class QScreen;
@@ -8,16 +9,7 @@ class QPixmap;
 class VideoCapture : public CaptureThread
 {
 public:
-    enum VidCapMode
-    {
-        VID_CAP_MODE_NONE = 0,
-        VID_CAP_MODE_DIRECTX,
-        VID_CAP_MODE_QT,
-        VID_CAP_MODE_CNT
-    };
-    static const char *VidCapModeStr(VidCapMode mode);
-
-    VideoCapture(VidCapMode mode, int fps);
+    VideoCapture();
     virtual ~VideoCapture();
 
     virtual bool init();
@@ -25,13 +17,14 @@ public:
 
     int width() const { return m_width; }
     int height() const { return m_height; }
+    int bitsize() const { return m_bitSize; }
     int fps() const { return m_fps; }
+    void fps(int fps) { m_fps = fps; }
+    void mode(VidCapMode mode) { m_mode = mode; }
 
 protected:
     virtual void run();
     virtual bool captureData(void *data);
-    
-private:
     bool captureWithDirectX(void *data);
     bool captureWithQt(void *data);
 
@@ -49,8 +42,8 @@ private:
     QScreen *m_screen = nullptr;
     QPixmap *m_pixmap = nullptr;
 
-    int m_width = 1920;
-    int m_height = 1080;
-    int m_bitSize = 4;
+    int m_width = 2560;
+    int m_height = 1440;
+    int m_bitSize = 4;      // bgra
     int m_fps = 25;
 };

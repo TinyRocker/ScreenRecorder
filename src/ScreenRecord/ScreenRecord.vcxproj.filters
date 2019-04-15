@@ -83,5 +83,8 @@
     <ClInclude Include="MediaRecord.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MediaFormat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

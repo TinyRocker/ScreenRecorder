@@ -14,11 +14,10 @@ public:
     virtual bool startCapture();
     virtual bool stopCapture();
     virtual void *getData();    //线程安全,返回的空间由用户释放
+    void cacheSize(int size) { size > 0 ? m_cacheSize = size : m_cacheSize; }
 protected:
     CaptureThread();
-
     virtual void run() = 0;
-    virtual bool captureData(void *data) = 0;
 
 protected:
     bool m_init = false;

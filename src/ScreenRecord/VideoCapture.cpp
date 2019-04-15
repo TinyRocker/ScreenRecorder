@@ -11,22 +11,7 @@
 
 #pragma comment(lib, "d3d9.lib")
 
-const char *VideoCapture::VidCapModeStr(VidCapMode mode)
-{
-    static char* str[] =
-    {
-        "none",
-        "DirectX",
-        "QT"
-    };
-    if (mode > VID_CAP_MODE_NONE && mode < VID_CAP_MODE_CNT) {
-        return str[mode];
-    } else {
-        return str[VID_CAP_MODE_NONE];
-    }
-}
-
-VideoCapture::VideoCapture(VidCapMode mode, int fps) : m_mode(mode), m_fps(fps)
+VideoCapture::VideoCapture()
 {
 }
 
@@ -78,8 +63,8 @@ bool VideoCapture::init()
             return false;
         }
 
-        // 初始化抓屏数据
-        m_rect = new D3DLOCKED_RECT();
+        // 4.初始化抓屏数据
+        m_rect = new D3DLOCKED_RECT;
         ZeroMemory(m_rect, sizeof(*m_rect));
     }
     else if (VID_CAP_MODE_QT == m_mode)
@@ -102,11 +87,14 @@ bool VideoCapture::init()
 
 bool VideoCapture::uninit()
 {
-    //Direct3D
+    //Direct3D 应该被析构掉，未找到对应函数
     m_mutex.lock();
     m_init = false;
+    delete m_rect;
+    m_rect = nullptr;
     m_mutex.unlock();
-    return false;
+
+    return true;
 }
 
 void VideoCapture::run()
@@ -128,19 +116,18 @@ void VideoCapture::run()
             msleep(10); // 缓存区已满，等待10ms
             continue;
         }
-        m_mutex.unlock();
 
         // 获取一帧数据
         data = new char[m_width * m_height * m_bitSize];
         if (!captureData(data))
         {
+            m_mutex.unlock();
             delete data;
             LOG(WARNING) << "video captureData failed";
             continue;
         }
 
         // 写入缓冲队列
-        m_mutex.lock();
         m_datas.push_back(data);
         m_mutex.unlock();
 
@@ -151,7 +138,7 @@ void VideoCapture::run()
         {
             msleep(ms_wait);
         }
-        std::cout << "fps_base:" << fps_base << " use:" << use_time << " ms_wait:" << ms_wait << std::endl;
+        //std::cout << "fps_base:" << fps_base << " use:" << use_time << " ms_wait:" << ms_wait << std::endl;
     }
 }
 

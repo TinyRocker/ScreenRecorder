@@ -1,6 +1,10 @@
 #pragma once
 #include "CaptureThread.h"
 
+class QAudioFormat;
+class QAudioInput;
+class QIODevice;
+
 class AudioCapture : public CaptureThread
 {
 public:
@@ -9,8 +13,17 @@ public:
 
     virtual bool init();
     virtual bool uninit();
+
+    int channels() const { return m_channels; }
+    int sampleRate() const { return m_sampleRate; }
+protected:
+    virtual void run();
 private:
-    int m_sampleRate = 44100;
+    QAudioFormat *m_audFmt = nullptr;;
+    QAudioInput  *m_input = nullptr;
+    QIODevice    *m_io = nullptr;
+
+    int m_sampleRate = 48000;
     int m_channels = 2;
     int m_sampleSize = 16;
     int m_nbSample = 1024;

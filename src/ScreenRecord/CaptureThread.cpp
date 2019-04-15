@@ -19,17 +19,16 @@ bool CaptureThread::startCapture()
 {
     if (!m_init)
     {
-        LOG(WARNING) << "CaptureThread not init";
+        LOG(WARNING) << "Capture Thread not init";
         return false;
     }
 
     m_mutex.lock();
     m_start = true;
+    start();    // 启动qt线程
     m_mutex.unlock();
 
-    LOG(INFO) << "startCapture";
-    start();    // 启动qt线程
-
+    LOG(INFO) << "start Capture Thread";
     return true;
 }
 
@@ -37,17 +36,25 @@ bool CaptureThread::stopCapture()
 {
     if (!m_init)
     {
-        LOG(WARNING) << "CaptureThread not init";
+        LOG(WARNING) << "Capture Thread not init";
         return false;
     }
-    LOG(INFO) << "stopCapture";
+    
     m_mutex.lock();
     m_start = false;
-    m_mutex.unlock();
-
-    terminate();
+    terminate();    // 结束qt线程
     wait();
     
+    // 清理缓存队列
+    while (!m_datas.empty())
+    {
+        void *p = m_datas.front();
+        m_datas.pop_front();
+        delete p;
+    }
+    m_mutex.unlock();
+
+    LOG(INFO) << "stop Capture Thread";
     return true;
 }
 

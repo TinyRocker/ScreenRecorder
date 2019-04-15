@@ -136,6 +136,7 @@
     <ClInclude Include="AudioCapture.h" />
     <ClInclude Include="CaptureThread.h" />
     <ClInclude Include="MediaFileCreate.h" />
+    <ClInclude Include="MediaFormat.h" />
     <ClInclude Include="MediaRecord.h" />
     <ClInclude Include="VideoCapture.h" />
   </ItemGroup>

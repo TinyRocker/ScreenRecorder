@@ -12,7 +12,7 @@ ScreenRecord::ScreenRecord(QWidget *parent)
 {
     ui.setupUi(this);
     
-    ct = new VideoCapture(VideoCapture::VID_CAP_MODE_DIRECTX, 25);
+    ct = new VideoCapture();
     if (ct->init())
     {
         ct->startCapture();

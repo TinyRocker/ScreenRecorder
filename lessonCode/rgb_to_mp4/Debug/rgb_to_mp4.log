@@ -1,4 +1,0 @@
-﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(377,5): warning MSB8004: Output 目录未以斜杠结尾。  此生成实例将添加斜杠，因为必须有这个斜杠才能正确计算 Output 目录。
-  rgb_to_mp4.cpp
-e:\project\videoscreenrecorder\include\ffmpeg\libavutil\rational.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
-  rgb_to_mp4.vcxproj -> E:\project\VideoScreenRecorder\lessonCode\rgb_to_mp4\..\test_bin\win32\rgb_to_mp4.exe

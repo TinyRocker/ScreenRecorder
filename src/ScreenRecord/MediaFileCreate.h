@@ -1,5 +1,7 @@
 #pragma once
 #include <string>
+#include <mutex>
+#include "MediaFormat.h"
 
 class AVFormatContext;
 class AVCodecContext;
@@ -12,31 +14,19 @@ class AVPacket;
 class MediaFileCreate
 {
 public:
-    enum VidPixFmt
-    {
-        VID_PIX_FMT_YUV420P = 0,
-        VID_PIX_FMT_BGRA = 28
-    };
-
-    enum VidCodecID
-    {
-        VID_CODEC_ID_H264 = 27,
-        VID_CODEC_ID_H265 = 173
-    };
-
     MediaFileCreate() {};
     virtual ~MediaFileCreate() {};
     
-    bool open(const char* file);
+    bool open(const char* file, const VidSwsParam& vid, const AudSwrParam& aud);
     void close();
-    bool addVideoStream(VidCodecID codecId, int bitsize);
-    bool addAudioStream() {};
+    bool addVideoStream();
+    bool addAudioStream();
     void* encodeVideo(const uint8_t *rgb);
-    //void* encodeAudio(const uint8_t *pcm) {};
+    void* encodeAudio(const uint8_t *pcm);
     bool writeHead();
     bool writeFrame(void *packet);
     bool writeTail();
-    bool isVideoFront() {};
+    bool isVideoFront();
 
     void inWidth(int width) { m_inWidth = width; }
     void inHeight(int height) { m_inHeight = height; }
@@ -47,6 +37,7 @@ public:
 private:
     std::string errStr(int err);
 protected:
+    std::mutex m_mutex;
     std::string m_filename;
 
     AVFormatContext *m_ic = nullptr;        // 封装mp4输出上下文
@@ -76,5 +67,20 @@ protected:
     int m_outHeight = 1080;
     int m_outPixFmt = VID_PIX_FMT_YUV420P;    // AV_PIX_FMT_YUV420P
     int m_outFps = 25;
+    VidCodecID m_vcodecId = VID_CODEC_ID_H264;
+
+    // 音频输入参数
+    int m_inChannels = 2;                           // 输入通道
+    int m_inSampleRate = 44100;                     // 采样率
+    AudSampleFmt m_inSampleFmt = AUD_SMP_FMT_S16;   // 采样格式
+    int m_nbSample = 1024;    // 输入输出通道的每帧数据每通道样本数量 
+
+    // 音频输出参数
+    int m_aBitrate = 2 * 64 * 1000; // 128 Kbps
+    int m_outChannels = 2;
+    int m_outSampleRate = 44100;                      // 采样率
+    AudSampleFmt m_outSampleFmt = AUD_SMP_FMT_FLATP;  // 采样格式
+    AudCodecID m_acodecId = AUD_CODEC_ID_AAC;   // AV_CODEC_ID_AAC
+
 };
 

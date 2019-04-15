@@ -1,4 +1,0 @@
-﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(377,5): warning MSB8004: Output 目录未以斜杠结尾。  此生成实例将添加斜杠，因为必须有这个斜杠才能正确计算 Output 目录。
-  MediaFileCreate.cpp
-  VideoCapture.cpp
-e:\project\githubproject\screenrecorder\include\ffmpeg\libavformat\avformat.h(319): fatal error C1083: 无法打开包括文件: “libavcodec/avcodec.h”: No such file or directory (编译源文件 MediaFileCreate.cpp)
