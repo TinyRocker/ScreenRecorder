@@ -17,7 +17,9 @@ public:
     MediaFileCreate() {};
     virtual ~MediaFileCreate() {};
     
-    bool open(const char* file, const VidSwsParam& vid, const AudSwrParam& aud);
+    bool open(const std::string& filename,
+        const VidRecordParam& vidrec, const VidSwsParam& vidsws,
+        const AudRecordParam& audrec, const AudSwrParam& audswr);
     void close();
     bool addVideoStream();
     bool addAudioStream();
@@ -37,7 +39,6 @@ public:
 private:
     std::string errStr(int err);
 protected:
-    std::mutex m_mutex;
     std::string m_filename;
 
     AVFormatContext *m_ic = nullptr;        // 封装mp4输出上下文

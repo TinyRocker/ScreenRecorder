@@ -20,82 +20,65 @@ MediaRecord::~MediaRecord()
     delete m_audio;
 }
 
-bool MediaRecord::init()
+bool MediaRecord::init(const VidRecordParam& vid, const AudRecordParam& aud)
 {
+    m_vRec = vid;
+    m_aRec = aud;
+
     if (m_init)
     {
         LOG(WARNING) << "MediaRecord is already init!";
-        return true;
+        return false;
     }
 
-    m_mutex.lock();
-    if (!m_video->init())
+    if (!m_video->init(vid))
     {
-        m_mutex.unlock();
         LOG(ERROR) << "video capture thread init failed!";
         return false;
     }
-    if (!m_audio->init())
+    if (!m_audio->init(aud))
     {
-        m_mutex.unlock();
         LOG(ERROR) << "audio capture thread init failed!";
         return false;
     }
+
     m_init = true;
-    m_mutex.unlock();
 
     return true;
 }
 
 bool MediaRecord::uninit()
 {
-    m_mutex.lock();
     if (!m_video->uninit())
     {
-        m_mutex.unlock();
         LOG(ERROR) << "video capture thread uninit failed!";
         return false;
     }
     if (!m_audio->uninit())
     {
-        m_mutex.unlock();
         LOG(ERROR) << "audio capture thread uninit failed!";
         return false;
     }
     m_init = false;
-    m_mutex.unlock();
 
     return true;
 }
 
-bool MediaRecord::startRecord(const char *filename, const VidRecParam& vidRecParam, const AudRecParam& audRecParam)
+bool MediaRecord::startRecord(const std::string& filename, const VidSwsParam& vid, const AudSwrParam& aud)
 {
+    std::lock_guard<std::mutex> lck(m_stateLock);
     if (!m_init)
     {
         LOG(ERROR) << "MediaRecord is not init!";
         return false;
     }
-    m_mutex.lock();
+
     m_filename = filename;
-    m_vidParam = vidRecParam;
-    
-    VidSwsParam vSws;
-    vSws.inwidth = m_video->width();
-    vSws.inheight = m_video->height();
-    vSws.inbitsize = m_video->bitsize();
-    vSws.recParm = vidRecParam;
+    m_vSws = vid;
+    m_aSwr = aud;
 
-    AudSwrParam aSwr;
-    aSwr.channels = m_audio->channels();
-    aSwr.sampleRate = m_audio->sampleRate();
-    aSwr.recParm = audRecParam;
-
-    m_video->fps(vidRecParam.fps);
-    m_video->mode(VID_CAP_MODE_DIRECTX);
-
-    if (!m_file->open(filename, vSws, aSwr))
+    if (!m_file->open(filename, m_vRec, m_vSws, m_aRec, m_aSwr))
     {
-        m_mutex.unlock();
         LOG(ERROR) << "MediaFileCreate create file:" << filename << "failed!";
         return false;
     }
@@ -109,14 +92,14 @@ bool MediaRecord::startRecord(const char *filename, const VidRecParam& vidRecPar
 
     start();                    // 开启QT线程，写入文件
     m_start = true;
-    m_mutex.unlock();
 
     return true;
 }
 
 bool MediaRecord::stopRecord()
 {
-    m_mutex.lock();
+    std::lock_guard<std::mutex> lck(m_stateLock);
+
     m_file->writeTail();        // 写入文件尾
     m_file->close();            // 关闭文件
 
@@ -126,39 +109,87 @@ bool MediaRecord::stopRecord()
     terminate();                // 结束QT线程
     wait();
     m_start = false;
-    m_mutex.unlock();
 
     return true;
 }
 
+#include <QTime>
 void MediaRecord::run()
 {
     uint8_t *rgb = nullptr;
     uint8_t *pcm = nullptr;
     void *packet = nullptr;
+    QTime time;
 
     while (m_start)
     {
-        m_mutex.lock();
+#if 0
+        time.restart();
+        std::lock_guard<std::mutex> lck(m_stateLock);
+        if (!m_start)   // double check
+        {
+            LOG(INFO) << "stop media record, file:" << m_filename.c_str();
+            break;
+        }
 
         rgb = (uint8_t *)m_video->getData();    // 从缓存队列获取一帧RGB数据
         if (rgb)
-        { 
-            packet = m_file->encodeVideo(rgb);  // 编码为YUV420P
-            m_file->writeFrame(packet);         // 写入文件
-            delete rgb;
-        }
-
-        pcm = (uint8_t *)m_audio->getData();
-        if (pcm)
         {
-            packet = m_file->encodeAudio(pcm);
-            m_file->writeFrame(packet);
-            delete pcm;
+            
+            packet = m_file->encodeVideo(rgb);  // 编码为YUV420P
+            if (packet)
+            {
+                m_file->writeFrame(packet); // 写入文件
+                std::cout << "write video one frame! use time:" << time.restart() << std::endl;
+            }
+            else
+            {
+                LOG(ERROR) << "encode video failed, filename:" << m_filename.c_str();
+            }
+            m_video->freeData(rgb);
         }
+        msleep(1);
+#endif
+#if 1
+        time.restart();
+        //if (m_file->isVideoFront())
+        {
+            rgb = (uint8_t *)m_video->getData();    // 从缓存队列获取一帧RGB数据
+            if (rgb)
+            {
 
-        m_mutex.unlock();
-
-        msleep(5);  // 等5ms再写入，避免cpu占用率过高
+                packet = m_file->encodeVideo(rgb);  // 编码为YUV420P
+                if (packet)
+                {
+                    m_file->writeFrame(packet); // 写入文件
+                    std::cout << "write video one frame! use time:" << time.restart() << std::endl;
+                }
+                else
+                {
+                    LOG(ERROR) << "encode video failed, filename:" << m_filename.c_str();
+                }
+                m_video->freeData(rgb);
+            }
+        }
+        //else
+        {
+            pcm = (uint8_t *)m_audio->getData();
+            if (pcm)
+            {
+                packet = m_file->encodeAudio(pcm);
+                if (packet)
+                {
+                    m_file->writeFrame(packet); // 写入文件
+                    std::cout << "write audio one frame! use time:" << time.restart() << std::endl;
+                }
+                else
+                {
+                    LOG(ERROR) << "encode audio failed, filename:" << m_filename.c_str();
+                }
+                m_audio->freeData(pcm);
+            }
+        }
+#endif
+        msleep(1);  // 等1ms再写入，避免cpu占用率过高
     }
 }

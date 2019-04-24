@@ -18,37 +18,40 @@ extern "C"
 
 std::string MediaFileCreate::errStr(int err)
 {
-    char str[512] = { 0 };
+    static char str[512] = { 0 };
     av_strerror(err, str, 512);
     return std::string(str);
 }
 
-bool MediaFileCreate::open(const char * file, const VidSwsParam& vid, const AudSwrParam& aud)
+bool MediaFileCreate::open(const std::string& filename,
+    const VidRecordParam& vidrec, const VidSwsParam& vidsws, 
+    const AudRecordParam& audrec, const AudSwrParam& audswr)
 {
     close();
 
-    std::lock_guard<std::mutex> lck(m_mutex);
+    m_inWidth = vidrec.width;
+    m_inHeight = vidrec.height;
+    m_outFps = vidrec.fps;
+    m_bitsize = vidrec.bitsize;
 
-    m_inWidth = vid.inwidth;
-    m_inHeight = vid.inheight;
-    m_bitsize = vid.inbitsize;
-    m_outWidth = vid.recParm.width;
-    m_outHeight = vid.recParm.height;
-    m_outFps = vid.recParm.fps;
-    m_vBitrate = vid.recParm.bitrate;
-    m_vcodecId = vid.recParm.codecId;
-
-    m_inChannels = aud.channels;
-    m_inSampleRate = aud.sampleRate;
-    m_outChannels = aud.recParm.channels;
-    m_outSampleRate = aud.recParm.sampleRate;
-    m_aBitrate = aud.recParm.bitrate;
-    m_acodecId = aud.recParm.codecId;
-
-    LOG(INFO) << "open:" << file;
-    m_filename = file;
+    m_outWidth = vidsws.width;
+    m_outHeight = vidsws.height;
+    m_vBitrate = vidsws.bitrate;
+    m_vcodecId = vidsws.codecId;
     
-    int ret = avformat_alloc_output_context2(&m_ic, nullptr, nullptr, file);
+
+    m_inChannels = audrec.channels;
+    m_inSampleRate = audrec.sampleRate;
+
+    m_outChannels = audswr.channels;
+    m_outSampleRate = audswr.sampleRate;
+    m_aBitrate = audswr.bitrate;
+    m_acodecId = audswr.codecId;
+
+    LOG(INFO) << "open:" << filename.c_str();
+    m_filename = filename;
+    
+    int ret = avformat_alloc_output_context2(&m_ic, nullptr, nullptr, filename.c_str());
     if (ret < 0)
     {
         LOG(ERROR) << "avformat_alloc_output_context2 failed, reason:" << errStr(ret);
@@ -60,7 +63,6 @@ bool MediaFileCreate::open(const char * file, const VidSwsParam& vid, const AudS
 void MediaFileCreate::close()
 {
     LOG(INFO) << "close:" << m_filename.c_str();
-    std::lock_guard<std::mutex> lck(m_mutex);
     if (m_ic)
     {
         avformat_close_input(&m_ic);
@@ -108,8 +110,6 @@ void MediaFileCreate::close()
 
 bool MediaFileCreate::addVideoStream()
 {
-    std::lock_guard<std::mutex> lck(m_mutex);
-
     if (!m_ic) { return false; }
 
     // 1.找到视频编码
@@ -133,7 +133,8 @@ bool MediaFileCreate::addVideoStream()
     m_vCtx->height = m_outHeight;
     m_vCtx->time_base = { 1, m_outFps };    // 时间基数
     m_vCtx->framerate = { m_outFps, 1 };
-    m_vCtx->gop_size = 100;          // 画面组大小，多少帧一个关键帧
+    //m_vCtx->gop_size = 100;          // 画面组大小，多少帧一个关键帧
+    m_vCtx->gop_size = 1;          // 画面组大小，多少帧一个关键帧
     m_vCtx->max_b_frames = 0;        // B帧为0
     m_vCtx->pix_fmt = (AVPixelFormat)m_outPixFmt;
     m_vCtx->codec_id = (AVCodecID)m_vcodecId;
@@ -197,7 +198,6 @@ bool MediaFileCreate::addVideoStream()
 
 bool MediaFileCreate::addAudioStream()
 {
-    std::lock_guard<std::mutex> lck(m_mutex);
     if (!m_ic) return false;
 
     // 1.找到音频编码器
@@ -277,7 +277,6 @@ bool MediaFileCreate::addAudioStream()
 
 void * MediaFileCreate::encodeVideo(const uint8_t * rgb)
 {
-    std::lock_guard<std::mutex> lck(m_mutex);
     if (!m_ic || !rgb) return nullptr;
     const uint8_t *indata[AV_NUM_DATA_POINTERS] = { 0 };
     indata[0] = rgb;
@@ -311,7 +310,7 @@ void * MediaFileCreate::encodeVideo(const uint8_t * rgb)
         return nullptr;
     }
 
-    av_packet_rescale_ts(packet, m_vCtx->time_base, m_vStream->time_base);  // 转换timebase
+    //av_packet_rescale_ts(packet, m_vCtx->time_base, m_vStream->time_base);  // 转换timebase
     packet->stream_index = m_vStream->index;
 
     return packet;
@@ -319,7 +318,6 @@ void * MediaFileCreate::encodeVideo(const uint8_t * rgb)
 
 void * MediaFileCreate::encodeAudio(const uint8_t * pcm)
 {
-    std::lock_guard<std::mutex> lck(m_mutex);
     if (!m_ic || !pcm) return nullptr;
 
     const uint8_t *indata[AV_NUM_DATA_POINTERS] = { 0 };
@@ -336,7 +334,6 @@ void * MediaFileCreate::encodeAudio(const uint8_t * pcm)
 
     // 接收编码后的数据
     AVPacket *packet = av_packet_alloc();
-    //av_init_packet(pkt);
     ret = avcodec_receive_packet(m_aCtx, packet);
     if (ret != 0)
     {
@@ -355,7 +352,6 @@ void * MediaFileCreate::encodeAudio(const uint8_t * pcm)
 
 bool MediaFileCreate::writeHead()
 {
-    std::lock_guard<std::mutex> lck(m_mutex);
     if (!m_ic) return false;
 
     // 打开io
@@ -380,8 +376,6 @@ bool MediaFileCreate::writeHead()
 
 bool MediaFileCreate::writeFrame(void * packet)
 {
-    std::lock_guard<std::mutex> lck(m_mutex);
-
     if (!m_ic || !packet || ((AVPacket*)packet)->size <= 0)
     {
         LOG(ERROR) << "param invalid!";
@@ -398,8 +392,6 @@ bool MediaFileCreate::writeFrame(void * packet)
 
 bool MediaFileCreate::writeTail()
 {
-    std::lock_guard<std::mutex> lck(m_mutex);
-
     if (!m_ic || !m_ic->pb)
     {
         return false;
@@ -425,7 +417,8 @@ bool MediaFileCreate::writeTail()
 
 bool MediaFileCreate::isVideoFront()
 {
-    if (!m_ic || !m_aCtx || !m_vCtx) return false;
+    if (!m_vCtx) return false;
+    if (!m_aCtx) return true;
     int ret = av_compare_ts(m_vpts, m_vCtx->time_base, m_apts, m_aCtx->time_base);
     if (ret <= 0)
     {

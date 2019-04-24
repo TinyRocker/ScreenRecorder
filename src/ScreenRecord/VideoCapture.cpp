@@ -1,4 +1,6 @@
 #include "VideoCapture.h"
+#include "MemoryPool.h"
+#include "MediaFormat.h"
 #include "glog/logging.h"
 
 //#include <QApplication>
@@ -19,14 +21,20 @@ VideoCapture::~VideoCapture()
 {
 }
 
-bool VideoCapture::init()
+bool VideoCapture::init(const VidRecordParam& param)
 {
     if (m_init)
     {
         LOG(WARNING) << "VideoCapture is already inited";
-        return true;
+        return false;
     }
 
+    m_width = param.width;
+    m_height = param.height;
+    m_fps = param.fps;
+    m_bitsize = param.bitsize;
+    m_mode = param.mode;
+    
     if (VID_CAP_MODE_DIRECTX == m_mode)
     {
         // 1.创建directx3d对象
@@ -37,6 +45,8 @@ bool VideoCapture::init()
             return false;
         }
 
+        //int width = GetSystemMetrics(SM_CXSCREEN);
+        //int height = GetSystemMetrics(SM_CYSCREEN);
         // 2.创建显卡的设备对象
         D3DPRESENT_PARAMETERS pa;
         ZeroMemory(&pa, sizeof(pa));
@@ -53,8 +63,6 @@ bool VideoCapture::init()
         }
 
         // 3.创建离屏表面
-        m_width = GetSystemMetrics(SM_CXSCREEN);
-        m_height = GetSystemMetrics(SM_CYSCREEN);
         m_device->CreateOffscreenPlainSurface(m_width, m_height,
             D3DFMT_A8R8G8B8, D3DPOOL_SCRATCH, &m_surface, nullptr);
         if (!m_surface)
@@ -77,10 +85,8 @@ bool VideoCapture::init()
     {
         return false;
     }
-
-    m_mutex.lock();
+    m_mempool = new MemoryPool(m_cacheSize, m_width * m_height * m_bitsize);
     m_init = true;
-    m_mutex.unlock();
 
     return true;
 }
@@ -88,13 +94,67 @@ bool VideoCapture::init()
 bool VideoCapture::uninit()
 {
     //Direct3D 应该被析构掉，未找到对应函数
-    m_mutex.lock();
-    m_init = false;
     delete m_rect;
     m_rect = nullptr;
-    m_mutex.unlock();
+    delete m_mempool;
+    m_mempool = nullptr;
+    m_init = false;
 
     return true;
+}
+
+bool VideoCapture::startCapture()
+{
+    std::lock_guard<std::mutex> lock(m_oper_lock);
+    if (!m_init)
+    {
+        LOG(WARNING) << "VideoCapture Thread not init";
+        return false;
+    }
+
+    m_start = true;
+    start();    // 启动qt线程
+
+    LOG(INFO) << "start VideoCapture Thread";
+    return true;
+}
+
+bool VideoCapture::stopCapture()
+{
+    std::lock_guard<std::mutex> lock(m_oper_lock);
+    if (!m_init)
+    {
+        LOG(WARNING) << "VideoCapture Thread not init";
+        return false;
+    }
+
+    m_start = false;
+    terminate();          // 结束qt线程
+    wait();
+
+    m_mempool->clean();   // 结束获取后及时清理数据
+
+    LOG(INFO) << "stop VideoCapture Thread";
+    return true;
+}
+
+void * VideoCapture::getData()
+{
+    m_data_lock.lock();
+    void *data = nullptr;
+    if (!m_datas.empty())
+    {
+        data = m_datas.front();
+        m_datas.pop();
+    }
+    m_data_lock.unlock();
+
+    return data;
+}
+
+void VideoCapture::freeData(void * p)
+{
+    m_mempool->freeMemory(p);
 }
 
 void VideoCapture::run()
@@ -108,28 +168,32 @@ void VideoCapture::run()
     while (m_start)
     {
         time.restart();
-        m_mutex.lock();
-        if (m_datas.size() >= m_cacheSize)
+        std::lock_guard<std::mutex> lock(m_oper_lock);
+        if (!m_start)   // double check
         {
-            m_mutex.unlock();
-            LOG(WARNING) << "cache buff full, wait 10ms, cache size:" << m_cacheSize;
-            msleep(10); // 缓存区已满，等待10ms
-            continue;
+            LOG(INFO) << "stop video capture";
+            break;
         }
 
-        // 获取一帧数据
-        data = new char[m_width * m_height * m_bitSize];
-        if (!captureData(data))
+        data = m_mempool->allocMemory();
+        if (!data)
         {
-            m_mutex.unlock();
-            delete data;
+            LOG(WARNING) << "cache buff full, wait 50ms, cache size:" << m_cacheSize;
+            msleep(50); // 缓存区已满，等待50ms
+            continue;
+        }
+        if (!captureData(data)) // 获取一帧数据
+        {
+            m_mempool->freeMemory(data);
+            data = nullptr;
             LOG(WARNING) << "video captureData failed";
             continue;
         }
 
         // 写入缓冲队列
-        m_datas.push_back(data);
-        m_mutex.unlock();
+        m_data_lock.lock();
+        m_datas.push(data);
+        m_data_lock.unlock();
 
         // 若抓取的帧率快于FPS,同步抓取的帧率
         use_time = time.restart();
@@ -144,12 +208,6 @@ void VideoCapture::run()
 
 bool VideoCapture::captureData(void *data)
 {
-    if (!data)
-    {
-        LOG(ERROR) << "input data is null!";
-        return false;
-    }
-
     if (VID_CAP_MODE_DIRECTX == m_mode)
     {
         return captureWithDirectX(data);
@@ -174,7 +232,7 @@ bool VideoCapture::captureWithDirectX(void *data)
         LOG(ERROR) << "directx surface LockRect failed";
         return false;
     }
-    memcpy(data, m_rect->pBits, m_width * m_height * m_bitSize);
+    memcpy(data, m_rect->pBits, m_width * m_height * m_bitsize);
     m_surface->UnlockRect();
 
     return true;

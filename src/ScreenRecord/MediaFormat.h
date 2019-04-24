@@ -33,34 +33,37 @@ enum AudSampleFmt
     AUD_SMP_FMT_FLATP = 8
 };
 
-struct VidRecParam
+struct VidRecordParam
 {
     int width;
     int height;
     int fps;
-    int bitrate;
-    VidCodecID codecId;
+    int bitsize;
+    VidCapMode mode;
+    //VidPixFmt format;
 };
 
 struct VidSwsParam
 {
-    int inwidth;
-    int inheight;
-    int inbitsize;
-    VidRecParam recParm;
+    int width;
+    int height;
+    //int fps;
+    //int bitsize;
+    int bitrate;
+    VidCodecID codecId;
 };
 
-struct AudRecParam
+struct AudRecordParam
 {
     int channels;
     int sampleRate;
-    int bitrate;
-    AudCodecID codecId;
+    int sampleSize;
 };
 
 struct AudSwrParam
 {
     int channels;
     int sampleRate;
-    AudRecParam recParm;
+    int bitrate;
+    AudCodecID codecId;
 };

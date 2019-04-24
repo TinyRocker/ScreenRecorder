@@ -1,9 +1,19 @@
-#include "ScreenRecord.h"
-#include <QtWidgets/QApplication>
+ï»¿#include <QtWidgets/QApplication>
 #include <QDateTime>
+#include <QScreen>
+#include <QtWidgets/QWidget>
+#include <QPainter>
+#include <thread>
 #include "glog/logging.h"
 
+#include "ScreenRecord.h"
+
 #include "MediaRecord.h"
+
+#include "MemoryPool.h"
+#include "VideoCapture.h"
+
+//#include <d3d9.h>
 
 #ifdef _DEBUG
 #pragma comment(lib, "glogd") 
@@ -13,33 +23,52 @@
 
 int main(int argc, char *argv[])
 {
-    google::InitGoogleLogging((const char*)argv[0]); // ³õÊ¼»¯glog
+    QApplication a(argc, argv);
+
+    google::InitGoogleLogging((const char*)argv[0]); // åˆå§‹åŒ–glog
     google::SetLogDestination(google::GLOG_INFO, "./log/myinfo");
     FLAGS_logbufsecs = 0;
-    // ²âÊÔMediaRecord
+
+    QScreen *m_screen = QGuiApplication::primaryScreen();
+    int width = m_screen->size().width();
+    int height = m_screen->size().height();
+
+    // æµ‹è¯•videoçº¿ç¨‹ç±»
+    ScreenRecord screen;
+    screen.show();
+
+#if 0
+
+    int vbitrate = 5 * 1024 * 1000; // 5 Mbps
+    int abitrate = 2 * 128 * 1000;   // 2 Mbps
+
+    VidRecordParam vidrec = { width, height, 20, 4, VID_CAP_MODE_DIRECTX };
+    AudRecordParam audrec = { 2, 48000, 16 };
+
+    VidSwsParam vidsws = { 1920, 1080, vbitrate, VID_CODEC_ID_H264 };
+    AudSwrParam audswr = { 2, 48000 , abitrate, AUD_CODEC_ID_AAC };
+
+    // æµ‹è¯•MediaRecord
     MediaRecord *record = new MediaRecord();
-    if (!record->init())
+    if (!record->init(vidrec, audrec))
     {
         LOG(ERROR) << "MediaRecord init failed";
         return -1;
     }
-    int vbitrate = 5 * 1024 * 1000; // 5 Mbps
-    int abitrate = 2 * 128 * 1000;   // 5 Mbps
 
-    VidRecParam vidParam = { 1920, 1080, 10, vbitrate, VID_CODEC_ID_H264 };
-    AudRecParam audParam = { 2, 48000, abitrate, AUD_CODEC_ID_AAC };
     QDateTime t = QDateTime::currentDateTime();
 
     QString filename = t.toString("yyyyMMdd_hhmmss");
-    //QString fmt = vidParam[i].width + 'x' + vidParam[i].height + '_' + vidParam[i].fps;
     filename = "./video/xcreen_" +  filename + ".mp4";
 
-    record->startRecord(filename.toLocal8Bit(), vidParam, audParam);
-    _sleep(20000);
+    record->startRecord(filename.toLocal8Bit().toStdString(), vidsws, audswr);
+    std::this_thread::sleep_for(std::chrono::seconds(10));
+    
+    //getchar();
 
     record->stopRecord();
 
-    _sleep(2000);
+    std::this_thread::sleep_for(std::chrono::seconds(2));
 
     system("pause");
 
@@ -67,9 +96,9 @@ int main(int argc, char *argv[])
 
     //    _sleep(5000);
     //}
+#endif
+    
 
-    QApplication a(argc, argv);
-    ScreenRecord w;
     //w.show();
 
     return a.exec();

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <QtWidgets/QWidget>
 #include "ui_ScreenRecord.h"
@@ -10,7 +10,7 @@ class ScreenRecord : public QWidget
 public:
     ScreenRecord(QWidget *parent = Q_NULLPTR);
 
-    // ²âÊÔ´úÂë
+    // Â²Ã¢ÃŠÃ”Â´ÃºÃ‚Ã«
     void timerEvent(QTimerEvent *event);
     void paintEvent(QPaintEvent *event);
 
