@@ -101,28 +101,28 @@ namespace google {
 
 #if STRIP_LOG == 0
 #define RAW_LOG_INFO(...) google::RawLog__(google::GLOG_INFO, \
-                                   __FILE__, __LINE__, __VA_ARGS__)
+                                   __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)
 #else
 #define RAW_LOG_INFO(...) google::RawLogStub__(0, __VA_ARGS__)
 #endif // STRIP_LOG == 0
 
 #if STRIP_LOG <= 1
 #define RAW_LOG_WARNING(...) google::RawLog__(google::GLOG_WARNING,   \
-                                      __FILE__, __LINE__, __VA_ARGS__)
+                                      __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)
 #else
 #define RAW_LOG_WARNING(...) google::RawLogStub__(0, __VA_ARGS__)
 #endif // STRIP_LOG <= 1
 
 #if STRIP_LOG <= 2
 #define RAW_LOG_ERROR(...) google::RawLog__(google::GLOG_ERROR,       \
-                                    __FILE__, __LINE__, __VA_ARGS__)
+                                    __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)
 #else
 #define RAW_LOG_ERROR(...) google::RawLogStub__(0, __VA_ARGS__)
 #endif // STRIP_LOG <= 2
 
 #if STRIP_LOG <= 3
 #define RAW_LOG_FATAL(...) google::RawLog__(google::GLOG_FATAL,       \
-                                    __FILE__, __LINE__, __VA_ARGS__)
+                                    __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)
 #else
 #define RAW_LOG_FATAL(...) \
   do { \
@@ -174,11 +174,6 @@ GOOGLE_GLOG_DLL_DECL void RawLog__(LogSeverity severity,
                                    int line,
                                    const char* format, ...)
    ;
-
-// Hack to propagate time information into this module so that
-// this module does not have to directly call localtime_r(),
-// which could allocate memory.
-GOOGLE_GLOG_DLL_DECL void RawLog__SetLastTime(const struct tm& t, int usecs);
 
 }
 

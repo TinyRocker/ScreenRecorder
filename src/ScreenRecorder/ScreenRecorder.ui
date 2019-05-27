@@ -1,0 +1,941 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ScreenRecorderClass</class>
+ <widget class="QWidget" name="ScreenRecorderClass">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>ScreenRecorder</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="ScreenRecorder.qrc">
+    <normaloff>:/ScreenRecorder/Resources/logo.ico</normaloff>:/ScreenRecorder/Resources/logo.ico</iconset>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">#background
+{
+background-color: rgb(80, 80, 80);
+border-radius:15px
+}
+#context
+{
+background-color: rgb(100, 100, 100);
+}
+#title
+{
+color: rgb(255, 255, 255);
+	font: 11pt &quot;Arial&quot;;
+}</string>
+  </property>
+  <widget class="QWidget" name="background" native="true">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>600</width>
+     <height>300</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
+   <widget class="QPushButton" name="miniButton">
+    <property name="geometry">
+     <rect>
+      <x>525</x>
+      <y>10</y>
+      <width>24</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton:pressed
+{
+background-color: rgba(255, 255, 255, 0);
+}
+</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset resource="ScreenRecorder.qrc">
+      <normaloff>:/ScreenRecorder/Resources/mini_24px.ico</normaloff>:/ScreenRecorder/Resources/mini_24px.ico</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>24</width>
+      <height>24</height>
+     </size>
+    </property>
+    <property name="flat">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="closeButton">
+    <property name="geometry">
+     <rect>
+      <x>560</x>
+      <y>10</y>
+      <width>24</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton:pressed
+{
+background-color: rgba(255, 255, 255, 0);
+}
+</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset resource="ScreenRecorder.qrc">
+      <normaloff>:/ScreenRecorder/Resources/close_24px.ico</normaloff>:/ScreenRecorder/Resources/close_24px.ico</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>24</width>
+      <height>24</height>
+     </size>
+    </property>
+    <property name="flat">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QWidget" name="context" native="true">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>40</y>
+      <width>600</width>
+      <height>260</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">#label_fileSavePath
+{
+color: rgb(255, 255, 255);
+font: 11pt &quot;Arial&quot;;
+}
+#lineEdit_fileSavePath
+{
+font: 11pt &quot;Arial&quot;;
+}
+#label_logSavePath
+{
+color: rgb(255, 255, 255);
+font: 11pt &quot;Arial&quot;;
+}
+#lineEdit_logSavePath
+{
+font: 11pt &quot;Arial&quot;;
+}
+#label_fileSavePrefix
+{
+color: rgb(255, 255, 255);
+font: 11pt &quot;Arial&quot;;
+}
+#label_logSavePrefix
+{
+color: rgb(255, 255, 255);
+font: 11pt &quot;Arial&quot;;
+}
+#lineEdit_fileSavePrefix
+{
+font: 11pt &quot;Arial&quot;;
+}
+#lineEdit_logSavePrefix
+{
+font: 11pt &quot;Arial&quot;;
+}
+#label_logLevel
+{
+color: rgb(255, 255, 255);
+font: 11pt &quot;Arial&quot;;
+}
+#checkAudio
+{
+color: rgb(255, 255, 255);
+font: 11pt &quot;Arial&quot;;
+}
+#checkVideo
+{
+color: rgb(255, 255, 255);
+font: 11pt &quot;Arial&quot;;
+}
+#label_channels
+{
+color: rgb(255, 255, 255);
+font: 11pt &quot;Arial&quot;;
+}
+
+#label_fps
+{
+color: rgb(255, 255, 255);
+font: 11pt &quot;Arial&quot;;
+}
+#label_height
+{
+color: rgb(255, 255, 255);
+font: 11pt &quot;Arial&quot;;
+}
+#label_samplerate
+{
+color: rgb(255, 255, 255);
+font: 11pt &quot;Arial&quot;;
+}
+#label_setAudio
+{
+color: rgb(255, 255, 255);
+font: 11pt &quot;Arial&quot;;
+}
+#label_setVideo
+{
+color: rgb(255, 255, 255);
+font: 11pt &quot;Arial&quot;;
+}
+#label_width
+{
+color: rgb(255, 255, 255);
+font: 11pt &quot;Arial&quot;;
+}
+#radioButton_dx9
+{
+color: rgb(255, 255, 255);
+font: 11pt &quot;Arial&quot;;
+}
+#radioButton_qt
+{
+color: rgb(255, 255, 255);
+font: 11pt &quot;Arial&quot;;
+}
+#label_videoMode
+{
+color: rgb(255, 255, 255);
+font: 11pt &quot;Arial&quot;;
+}
+#lineEdit_width
+{
+font: 11pt &quot;Arial&quot;;
+}
+#lineEdit_height
+{
+font: 11pt &quot;Arial&quot;;
+}
+#lineEdit_fps
+{
+font: 11pt &quot;Arial&quot;;
+}
+#lineEdit_channels
+{
+font: 11pt &quot;Arial&quot;;
+}
+#lineEdit_samplerate
+{
+font: 11pt &quot;Arial&quot;;
+}</string>
+    </property>
+    <widget class="QPushButton" name="record">
+     <property name="geometry">
+      <rect>
+       <x>390</x>
+       <y>130</y>
+       <width>72</width>
+       <height>72</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton:!hover
+{
+border-image: url(:/ScreenRecorder/Resources/start_72px.ico);
+}
+QPushButton:hover
+{
+border-image: url(:/ScreenRecorder/Resources/start_72px.ico);
+}
+QPushButton:pressed
+{
+background-color: rgba(255, 255, 255, 0);
+}
+</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>72</width>
+       <height>72</height>
+      </size>
+     </property>
+     <property name="autoDefault">
+      <bool>false</bool>
+     </property>
+     <property name="default">
+      <bool>false</bool>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_fileSavePath">
+     <property name="geometry">
+      <rect>
+       <x>120</x>
+       <y>10</y>
+       <width>261</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>./video/</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkAudio">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>190</y>
+       <width>80</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>录制音频</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="checkVideo">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>90</y>
+       <width>80</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>录制视频</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_fileSavePath">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>100</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>文件保存路径：</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_width">
+     <property name="geometry">
+      <rect>
+       <x>60</x>
+       <y>115</y>
+       <width>40</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>1920</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_height">
+     <property name="geometry">
+      <rect>
+       <x>180</x>
+       <y>115</y>
+       <width>40</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>1080</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_fps">
+     <property name="geometry">
+      <rect>
+       <x>280</x>
+       <y>115</y>
+       <width>40</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>25</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_fps">
+     <property name="geometry">
+      <rect>
+       <x>249</x>
+       <y>115</y>
+       <width>40</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>fps</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_width">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>115</y>
+       <width>40</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>width</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_height">
+     <property name="geometry">
+      <rect>
+       <x>120</x>
+       <y>115</y>
+       <width>40</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>height</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_channels">
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>220</y>
+       <width>40</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>2</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_samplerate">
+     <property name="geometry">
+      <rect>
+       <x>220</x>
+       <y>220</y>
+       <width>60</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>44100</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_channels">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>220</y>
+       <width>60</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>channels</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_samplerate">
+     <property name="geometry">
+      <rect>
+       <x>130</x>
+       <y>220</y>
+       <width>81</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>samplerate</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_recordingVideo">
+     <property name="geometry">
+      <rect>
+       <x>340</x>
+       <y>215</y>
+       <width>32</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="scaledContents">
+      <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_recordingAudio">
+     <property name="geometry">
+      <rect>
+       <x>380</x>
+       <y>215</y>
+       <width>32</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_time">
+     <property name="geometry">
+      <rect>
+       <x>440</x>
+       <y>215</y>
+       <width>130</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(255, 255, 255);
+font: 24pt &quot;Arial&quot;;</string>
+     </property>
+     <property name="text">
+      <string>00:00:00</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="radioButton_dx9">
+     <property name="geometry">
+      <rect>
+       <x>120</x>
+       <y>145</y>
+       <width>80</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Directx9</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="radioButton_qt">
+     <property name="geometry">
+      <rect>
+       <x>210</x>
+       <y>145</y>
+       <width>50</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Qt</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_videoMode">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>145</y>
+       <width>90</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>视频录制模式</string>
+     </property>
+    </widget>
+    <widget class="QComboBox" name="comboBox_logLevel">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>460</x>
+       <y>90</y>
+       <width>71</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>20</height>
+      </size>
+     </property>
+     <property name="editable">
+      <bool>false</bool>
+     </property>
+     <property name="currentIndex">
+      <number>2</number>
+     </property>
+     <property name="modelColumn">
+      <number>0</number>
+     </property>
+     <item>
+      <property name="text">
+       <string>DETAIL</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>DEBUG</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>INFO</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>WARNING</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>ERROR</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>FATEL</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_logSavePath">
+     <property name="geometry">
+      <rect>
+       <x>120</x>
+       <y>50</y>
+       <width>261</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>./log/</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_logSavePath">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>50</y>
+       <width>100</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>日志保存路径：</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_fileSavePrefix">
+     <property name="geometry">
+      <rect>
+       <x>390</x>
+       <y>10</y>
+       <width>60</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>文件前缀：</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_logSavePrefix">
+     <property name="geometry">
+      <rect>
+       <x>390</x>
+       <y>50</y>
+       <width>60</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>日志前缀：</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_fileSavePrefix">
+     <property name="geometry">
+      <rect>
+       <x>459</x>
+       <y>10</y>
+       <width>121</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>ScreenRecord_</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="lineEdit_logSavePrefix">
+     <property name="geometry">
+      <rect>
+       <x>459</x>
+       <y>50</y>
+       <width>121</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>LOG_</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_logLevel">
+     <property name="geometry">
+      <rect>
+       <x>390</x>
+       <y>90</y>
+       <width>60</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>日志级别：</string>
+     </property>
+    </widget>
+    <zorder>label_recordingAudio</zorder>
+    <zorder>label_recordingVideo</zorder>
+    <zorder>record</zorder>
+    <zorder>lineEdit_fileSavePath</zorder>
+    <zorder>checkAudio</zorder>
+    <zorder>checkVideo</zorder>
+    <zorder>label_fileSavePath</zorder>
+    <zorder>lineEdit_width</zorder>
+    <zorder>lineEdit_height</zorder>
+    <zorder>lineEdit_fps</zorder>
+    <zorder>label_fps</zorder>
+    <zorder>label_width</zorder>
+    <zorder>label_height</zorder>
+    <zorder>lineEdit_channels</zorder>
+    <zorder>lineEdit_samplerate</zorder>
+    <zorder>label_channels</zorder>
+    <zorder>label_samplerate</zorder>
+    <zorder>label_time</zorder>
+    <zorder>radioButton_dx9</zorder>
+    <zorder>radioButton_qt</zorder>
+    <zorder>label_videoMode</zorder>
+    <zorder>comboBox_logLevel</zorder>
+    <zorder>lineEdit_logSavePath</zorder>
+    <zorder>label_logSavePath</zorder>
+    <zorder>label_fileSavePrefix</zorder>
+    <zorder>label_logSavePrefix</zorder>
+    <zorder>lineEdit_fileSavePrefix</zorder>
+    <zorder>lineEdit_logSavePrefix</zorder>
+    <zorder>label_logLevel</zorder>
+   </widget>
+   <widget class="QLabel" name="title">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>10</y>
+      <width>141</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>ScreenRecoder</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="logo">
+    <property name="geometry">
+     <rect>
+      <x>8</x>
+      <y>8</y>
+      <width>28</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap resource="ScreenRecorder.qrc">:/ScreenRecorder/Resources/logo.ico</pixmap>
+    </property>
+    <property name="scaledContents">
+     <bool>true</bool>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources>
+  <include location="ScreenRecorder.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>closeButton</sender>
+   <signal>clicked()</signal>
+   <receiver>ScreenRecorderClass</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>572</x>
+     <y>20</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>626</x>
+     <y>44</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>miniButton</sender>
+   <signal>clicked()</signal>
+   <receiver>ScreenRecorderClass</receiver>
+   <slot>showMinimized()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>537</x>
+     <y>27</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>606</x>
+     <y>58</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>record</sender>
+   <signal>clicked()</signal>
+   <receiver>ScreenRecorderClass</receiver>
+   <slot>record()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>426</x>
+     <y>200</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>619</x>
+     <y>128</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkVideo</sender>
+   <signal>clicked()</signal>
+   <receiver>ScreenRecorderClass</receiver>
+   <slot>checkVideoIsRecord()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>52</x>
+     <y>140</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>57</x>
+     <y>335</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkAudio</sender>
+   <signal>clicked()</signal>
+   <receiver>ScreenRecorderClass</receiver>
+   <slot>checkAudioIsRecord()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>33</x>
+     <y>242</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>40</x>
+     <y>304</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>comboBox_logLevel</sender>
+   <signal>currentTextChanged(QString)</signal>
+   <receiver>ScreenRecorderClass</receiver>
+   <slot>setLogLevel()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>510</x>
+     <y>146</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>691</x>
+     <y>147</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>record()</slot>
+  <slot>checkVideoIsRecord()</slot>
+  <slot>checkAudioIsRecord()</slot>
+  <slot>setLogLevel()</slot>
+ </slots>
+</ui>

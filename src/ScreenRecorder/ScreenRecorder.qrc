@@ -1,0 +1,11 @@
+<RCC>
+  <qresource prefix="ScreenRecorder">
+    <file>Resources/audio_recorder_32px.ico</file>
+    <file>Resources/close_24px.ico</file>
+    <file>Resources/logo.ico</file>
+    <file>Resources/mini_24px.ico</file>
+    <file>Resources/start_72px.ico</file>
+    <file>Resources/stop_72px.ico</file>
+    <file>Resources/video_recorder_32px.ico</file>
+  </qresource>
+</RCC>
