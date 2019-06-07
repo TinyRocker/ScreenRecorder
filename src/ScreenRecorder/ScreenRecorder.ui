@@ -20,17 +20,12 @@
   <property name="styleSheet">
    <string notr="true">#background
 {
-background-color: rgb(80, 80, 80);
+background-color: rgb(70, 70, 70);
 border-radius:15px
 }
 #context
 {
 background-color: rgb(100, 100, 100);
-}
-#title
-{
-color: rgb(255, 255, 255);
-	font: 11pt &quot;Arial&quot;;
 }</string>
   </property>
   <widget class="QWidget" name="background" native="true">
@@ -45,71 +40,120 @@ color: rgb(255, 255, 255);
    <property name="styleSheet">
     <string notr="true"/>
    </property>
-   <widget class="QPushButton" name="miniButton">
+   <widget class="QWidget" name="title" native="true">
     <property name="geometry">
      <rect>
-      <x>525</x>
-      <y>10</y>
-      <width>24</width>
-      <height>24</height>
+      <x>0</x>
+      <y>0</y>
+      <width>600</width>
+      <height>40</height>
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QPushButton:pressed
+     <string notr="true">#label_title
+{
+color: rgb(255, 255, 255);
+	font: 11pt &quot;Arial&quot;;
+}</string>
+    </property>
+    <widget class="QLabel" name="logo">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>6</y>
+       <width>28</width>
+       <height>28</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="pixmap">
+      <pixmap resource="ScreenRecorder.qrc">:/ScreenRecorder/Resources/logo.ico</pixmap>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_title">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>10</y>
+       <width>110</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>ScreenRecoder</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="miniButton">
+     <property name="geometry">
+      <rect>
+       <x>530</x>
+       <y>10</y>
+       <width>24</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton:pressed
 {
 background-color: rgba(255, 255, 255, 0);
 }
 </string>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="icon">
-     <iconset resource="ScreenRecorder.qrc">
-      <normaloff>:/ScreenRecorder/Resources/mini_24px.ico</normaloff>:/ScreenRecorder/Resources/mini_24px.ico</iconset>
-    </property>
-    <property name="iconSize">
-     <size>
-      <width>24</width>
-      <height>24</height>
-     </size>
-    </property>
-    <property name="flat">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="closeButton">
-    <property name="geometry">
-     <rect>
-      <x>560</x>
-      <y>10</y>
-      <width>24</width>
-      <height>24</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QPushButton:pressed
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="ScreenRecorder.qrc">
+       <normaloff>:/ScreenRecorder/Resources/mini_24px.ico</normaloff>:/ScreenRecorder/Resources/mini_24px.ico</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>24</width>
+       <height>24</height>
+      </size>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="closeButton">
+     <property name="geometry">
+      <rect>
+       <x>560</x>
+       <y>10</y>
+       <width>24</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton:pressed
 {
 background-color: rgba(255, 255, 255, 0);
 }
 </string>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="icon">
-     <iconset resource="ScreenRecorder.qrc">
-      <normaloff>:/ScreenRecorder/Resources/close_24px.ico</normaloff>:/ScreenRecorder/Resources/close_24px.ico</iconset>
-    </property>
-    <property name="iconSize">
-     <size>
-      <width>24</width>
-      <height>24</height>
-     </size>
-    </property>
-    <property name="flat">
-     <bool>true</bool>
-    </property>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="ScreenRecorder.qrc">
+       <normaloff>:/ScreenRecorder/Resources/close_24px.ico</normaloff>:/ScreenRecorder/Resources/close_24px.ico</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>24</width>
+       <height>24</height>
+      </size>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+    </widget>
    </widget>
    <widget class="QWidget" name="context" native="true">
     <property name="geometry">
@@ -242,6 +286,16 @@ font: 11pt &quot;Arial&quot;;
 #lineEdit_samplerate
 {
 font: 11pt &quot;Arial&quot;;
+}
+#label_bitrate_video
+{
+color: rgb(255, 255, 255);
+font: 11pt &quot;Arial&quot;;
+}
+#label_bitrate_audio
+{
+color: rgb(255, 255, 255);
+font: 11pt &quot;Arial&quot;;
 }</string>
     </property>
     <widget class="QPushButton" name="record">
@@ -361,7 +415,7 @@ background-color: rgba(255, 255, 255, 0);
      <property name="geometry">
       <rect>
        <x>60</x>
-       <y>115</y>
+       <y>120</y>
        <width>40</width>
        <height>20</height>
       </rect>
@@ -376,8 +430,8 @@ background-color: rgba(255, 255, 255, 0);
     <widget class="QLineEdit" name="lineEdit_height">
      <property name="geometry">
       <rect>
-       <x>180</x>
-       <y>115</y>
+       <x>110</x>
+       <y>120</y>
        <width>40</width>
        <height>20</height>
       </rect>
@@ -392,8 +446,8 @@ background-color: rgba(255, 255, 255, 0);
     <widget class="QLineEdit" name="lineEdit_fps">
      <property name="geometry">
       <rect>
-       <x>280</x>
-       <y>115</y>
+       <x>190</x>
+       <y>120</y>
        <width>40</width>
        <height>20</height>
       </rect>
@@ -402,54 +456,41 @@ background-color: rgba(255, 255, 255, 0);
       <string notr="true"/>
      </property>
      <property name="text">
-      <string>25</string>
+      <string>30</string>
      </property>
     </widget>
     <widget class="QLabel" name="label_fps">
      <property name="geometry">
       <rect>
-       <x>249</x>
-       <y>115</y>
-       <width>40</width>
+       <x>160</x>
+       <y>120</y>
+       <width>31</width>
        <height>20</height>
       </rect>
      </property>
      <property name="text">
-      <string>fps</string>
+      <string>帧率</string>
      </property>
     </widget>
     <widget class="QLabel" name="label_width">
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>115</y>
-       <width>40</width>
+       <y>120</y>
+       <width>51</width>
        <height>20</height>
       </rect>
      </property>
      <property name="text">
-      <string>width</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_height">
-     <property name="geometry">
-      <rect>
-       <x>120</x>
-       <y>115</y>
-       <width>40</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>height</string>
+      <string>分辨率</string>
      </property>
     </widget>
     <widget class="QLineEdit" name="lineEdit_channels">
      <property name="geometry">
       <rect>
-       <x>80</x>
+       <x>60</x>
        <y>220</y>
-       <width>40</width>
+       <width>31</width>
        <height>20</height>
       </rect>
      </property>
@@ -463,7 +504,7 @@ background-color: rgba(255, 255, 255, 0);
     <widget class="QLineEdit" name="lineEdit_samplerate">
      <property name="geometry">
       <rect>
-       <x>220</x>
+       <x>150</x>
        <y>220</y>
        <width>60</width>
        <height>20</height>
@@ -481,31 +522,31 @@ background-color: rgba(255, 255, 255, 0);
       <rect>
        <x>10</x>
        <y>220</y>
-       <width>60</width>
+       <width>51</width>
        <height>20</height>
       </rect>
      </property>
      <property name="text">
-      <string>channels</string>
+      <string>通道数</string>
      </property>
     </widget>
     <widget class="QLabel" name="label_samplerate">
      <property name="geometry">
       <rect>
-       <x>130</x>
+       <x>100</x>
        <y>220</y>
-       <width>81</width>
+       <width>51</width>
        <height>20</height>
       </rect>
      </property>
      <property name="text">
-      <string>samplerate</string>
+      <string>采样率</string>
      </property>
     </widget>
     <widget class="QLabel" name="label_recordingVideo">
      <property name="geometry">
       <rect>
-       <x>340</x>
+       <x>360</x>
        <y>215</y>
        <width>32</width>
        <height>32</height>
@@ -521,7 +562,7 @@ background-color: rgba(255, 255, 255, 0);
     <widget class="QLabel" name="label_recordingAudio">
      <property name="geometry">
       <rect>
-       <x>380</x>
+       <x>400</x>
        <y>215</y>
        <width>32</width>
        <height>32</height>
@@ -552,7 +593,7 @@ font: 24pt &quot;Arial&quot;;</string>
      <property name="geometry">
       <rect>
        <x>120</x>
-       <y>145</y>
+       <y>150</y>
        <width>80</width>
        <height>20</height>
       </rect>
@@ -568,7 +609,7 @@ font: 24pt &quot;Arial&quot;;</string>
      <property name="geometry">
       <rect>
        <x>210</x>
-       <y>145</y>
+       <y>150</y>
        <width>50</width>
        <height>20</height>
       </rect>
@@ -584,7 +625,7 @@ font: 24pt &quot;Arial&quot;;</string>
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>145</y>
+       <y>150</y>
        <width>90</width>
        <height>20</height>
       </rect>
@@ -604,7 +645,7 @@ font: 24pt &quot;Arial&quot;;</string>
       <rect>
        <x>460</x>
        <y>90</y>
-       <width>71</width>
+       <width>70</width>
        <height>30</height>
       </rect>
      </property>
@@ -766,6 +807,232 @@ font: 24pt &quot;Arial&quot;;</string>
       <string>日志级别：</string>
      </property>
     </widget>
+    <widget class="QComboBox" name="comboBox_bitrate_video">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>280</x>
+       <y>120</y>
+       <width>50</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>20</height>
+      </size>
+     </property>
+     <property name="editable">
+      <bool>false</bool>
+     </property>
+     <property name="currentText">
+      <string>2048</string>
+     </property>
+     <property name="currentIndex">
+      <number>6</number>
+     </property>
+     <property name="modelColumn">
+      <number>0</number>
+     </property>
+     <item>
+      <property name="text">
+       <string>256</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>384</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>512</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>768</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>1024</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>1536</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>2048</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>4096</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>6140</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>8184</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="QComboBox" name="comboBox_bitrate_audio">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>260</x>
+       <y>220</y>
+       <width>50</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>20</height>
+      </size>
+     </property>
+     <property name="editable">
+      <bool>false</bool>
+     </property>
+     <property name="currentText">
+      <string>128</string>
+     </property>
+     <property name="currentIndex">
+      <number>3</number>
+     </property>
+     <property name="modelColumn">
+      <number>0</number>
+     </property>
+     <item>
+      <property name="text">
+       <string>32</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>64</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>96</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>128</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>192</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>256</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>320</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>384</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>448</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>512</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="QLabel" name="label_bitrate_video">
+     <property name="geometry">
+      <rect>
+       <x>240</x>
+       <y>120</y>
+       <width>30</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>码率</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_bitrate_audio">
+     <property name="geometry">
+      <rect>
+       <x>220</x>
+       <y>220</y>
+       <width>30</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>码率</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_Kbps">
+     <property name="geometry">
+      <rect>
+       <x>335</x>
+       <y>120</y>
+       <width>30</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(255, 255, 255);</string>
+     </property>
+     <property name="text">
+      <string>Kbps</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_Kbps2">
+     <property name="geometry">
+      <rect>
+       <x>315</x>
+       <y>220</y>
+       <width>30</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(255, 255, 255);</string>
+     </property>
+     <property name="text">
+      <string>Kbps</string>
+     </property>
+    </widget>
     <zorder>label_recordingAudio</zorder>
     <zorder>label_recordingVideo</zorder>
     <zorder>record</zorder>
@@ -778,7 +1045,6 @@ font: 24pt &quot;Arial&quot;;</string>
     <zorder>lineEdit_fps</zorder>
     <zorder>label_fps</zorder>
     <zorder>label_width</zorder>
-    <zorder>label_height</zorder>
     <zorder>lineEdit_channels</zorder>
     <zorder>lineEdit_samplerate</zorder>
     <zorder>label_channels</zorder>
@@ -795,38 +1061,12 @@ font: 24pt &quot;Arial&quot;;</string>
     <zorder>lineEdit_fileSavePrefix</zorder>
     <zorder>lineEdit_logSavePrefix</zorder>
     <zorder>label_logLevel</zorder>
-   </widget>
-   <widget class="QLabel" name="title">
-    <property name="geometry">
-     <rect>
-      <x>50</x>
-      <y>10</y>
-      <width>141</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>ScreenRecoder</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="logo">
-    <property name="geometry">
-     <rect>
-      <x>8</x>
-      <y>8</y>
-      <width>28</width>
-      <height>28</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="pixmap">
-     <pixmap resource="ScreenRecorder.qrc">:/ScreenRecorder/Resources/logo.ico</pixmap>
-    </property>
-    <property name="scaledContents">
-     <bool>true</bool>
-    </property>
+    <zorder>comboBox_bitrate_video</zorder>
+    <zorder>comboBox_bitrate_audio</zorder>
+    <zorder>label_bitrate_video</zorder>
+    <zorder>label_bitrate_audio</zorder>
+    <zorder>label_Kbps</zorder>
+    <zorder>label_Kbps2</zorder>
    </widget>
   </widget>
  </widget>

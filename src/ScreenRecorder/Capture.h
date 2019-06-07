@@ -2,9 +2,9 @@
 #include <QThread>
 #include <mutex>
 #include <queue>
+#include "MediaFormat.h"
 
 class MemoryPool;
-class FrameData;
 
 class Capture : protected QThread
 {
@@ -14,6 +14,7 @@ public:
     virtual bool startCapture();
     virtual bool stopCapture();
     FrameData *getData();
+    //void popData();
     void freeData(FrameData *p);
     void clean();
 protected:
@@ -30,5 +31,6 @@ protected:
     bool        m_start = false;
     MemoryPool  *m_mempool = nullptr;    // 内存池句柄
     std::queue<FrameData*> m_frames;     // 内存队列
-    int m_cacheSize = 5;
+    FrameType   m_type;
+    int         m_cacheSize = 10;
 };

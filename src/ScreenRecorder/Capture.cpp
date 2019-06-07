@@ -76,6 +76,13 @@ FrameData * Capture::getData()
     return data;
 }
 
+//void Capture::popData()
+//{
+//    std::lock_guard<std::mutex> lck(m_data_lck);
+//
+//    m_frames.pop();
+//}
+
 void Capture::freeData(FrameData * p)
 {
     std::lock_guard<std::mutex> lck(m_data_lck);
@@ -136,10 +143,9 @@ void Capture::run()
             continue;
         }
 
-        // 记录时间戳
-        frame->timestamp = QDateTime::currentMSecsSinceEpoch();
-        // 写入缓冲队列
-        pushData(frame);
+        frame->type = m_type;
+        frame->timestamp = QDateTime::currentMSecsSinceEpoch(); // 记录时间戳
+        pushData(frame);                                        // 写入缓冲队列
 
         // 若抓取的帧率快于FPS,同步抓取的帧率
         use_time = time.restart();

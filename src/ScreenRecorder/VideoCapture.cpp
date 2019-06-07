@@ -18,7 +18,7 @@ VideoCapture::~VideoCapture()
     delete m_screenCapture;
 }
 
-bool VideoCapture::init(const VidCapParam& param)
+bool VideoCapture::init(const VidRawParam& param)
 {
     std::lock_guard<std::mutex> lck(m_oper_lck);
 
@@ -38,7 +38,9 @@ bool VideoCapture::init(const VidCapParam& param)
         LOG(ERROR) << "screen capture init failed!";
         return false;
     }
-    m_cacheSize = 10;
+    m_cacheSize = 5;
+
+    m_type = FrameType_Vid;
 
     m_data_lck.lock();
     m_mempool = new MemoryPool(m_cacheSize, m_width * m_height * m_bitsize);
@@ -54,8 +56,12 @@ bool VideoCapture::uninit()
     std::lock_guard<std::mutex> lck(m_oper_lck);
 
     m_data_lck.lock();
-    delete m_mempool;
-    m_mempool = nullptr;
+    if (m_mempool)
+    {
+        m_mempool->clean();
+        delete m_mempool;
+        m_mempool = nullptr;
+    }
     m_data_lck.unlock();
 
     m_init = false;

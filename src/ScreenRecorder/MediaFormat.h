@@ -1,11 +1,13 @@
 #pragma once
 #include <cstdint>
 
-// 数值对应ffmpeg version 4.0.2
+// 数值对应ffmpeg version 4.1.3
 
 enum VidPixFmt
 {
     VID_PIX_FMT_YUV420P = 0,
+    VID_PIX_FMT_RGB24 = 2,
+    VID_PIX_FMT_BGR24 = 3,
     VID_PIX_FMT_BGRA = 28
 };
 
@@ -25,6 +27,7 @@ enum VidCapMode
 
 enum AudCodecID
 {
+    AUD_CODEC_ID_PCM = 0x10000,
     AUD_CODEC_ID_AAC = 86018,
 };
 
@@ -34,26 +37,28 @@ enum AudSampleFmt
     AUD_SMP_FMT_FLATP = 8
 };
 
-struct VidCapParam
+struct VidRawParam
 {
     int width;
     int height;
     int fps;
     int bitsize;
-    VidCapMode mode;
+    VidPixFmt format;
     int wid = 0;
-    VidPixFmt format = VID_PIX_FMT_BGRA;
+    VidCapMode mode = VID_CAP_MODE_DX9;
 };
 
-struct VidOutParam
+struct VidEncodeParam
 {
     int width;
     int height;
+    int fps;
     int bitrate;
     VidCodecID codecId;
+    VidPixFmt format;
 };
 
-struct AudCapParam
+struct AudRawParam
 {
     int channels;
     int sampleRate;
@@ -63,7 +68,7 @@ struct AudCapParam
     AudSampleFmt fmt;
 };
 
-struct AudOutParam
+struct AudEncodeParam
 {
     int channels;
     int sampleRate;
@@ -72,8 +77,15 @@ struct AudOutParam
     AudSampleFmt fmt;
 };
 
+enum FrameType
+{
+    FrameType_Vid = 0,
+    FrameType_Aud
+};
+
 struct FrameData
 {
-    char *data;             // one frame
-    int64_t  timestamp;     // currentMSecsSinceEpoch
+    char      *data;        // one frame
+    FrameType type;
+    int64_t   timestamp;    // currentMSecsSinceEpoch
 };

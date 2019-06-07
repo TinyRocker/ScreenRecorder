@@ -11,7 +11,7 @@ AudioCapture::~AudioCapture()
 {
 }
 
-bool AudioCapture::init(const AudCapParam& param)
+bool AudioCapture::init(const AudRawParam& param)
 {
     std::lock_guard<std::mutex> lck(m_oper_lck);
 
@@ -36,7 +36,8 @@ bool AudioCapture::init(const AudCapParam& param)
     m_input = new QAudioInput(*m_audFmt);
 
     m_size = m_nbSample * m_channels * m_sampleSize / 8;
-    m_cacheSize = 50;
+    m_cacheSize = 100;
+    m_type = FrameType_Aud;
     
     m_data_lck.lock();
     m_mempool = new MemoryPool(m_cacheSize, m_nbSample * m_channels * m_sampleSize / 8);
@@ -67,6 +68,7 @@ bool AudioCapture::uninit()
     m_data_lck.lock();
     if (m_mempool)
     {
+        m_mempool->clean();
         delete m_mempool;
         m_mempool = nullptr;
     }

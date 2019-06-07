@@ -10,7 +10,7 @@ public:
     VideoCapture();
     virtual ~VideoCapture();
 
-    bool init(const VidCapParam& param);
+    bool init(const VidRawParam& param);
     bool uninit();
 
     int width() const { return m_width; }

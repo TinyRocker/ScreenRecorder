@@ -12,7 +12,7 @@ public:
     AudioCapture();
     virtual ~AudioCapture();
 
-    virtual bool init(const AudCapParam& param);
+    virtual bool init(const AudRawParam& param);
     virtual bool uninit();
     bool startCapture();
     bool stopCapture();

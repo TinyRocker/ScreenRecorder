@@ -1,28 +1,38 @@
 #include "MediaRecord.h"
-#include "MediaFileCreate.h"
 #include "VideoCapture.h"
 #include "AudioCapture.h"
+#include "MediaFileCreate.h"
+#include "MediaEncode.h"
 #include "glog/logging.h"
+
+extern "C"
+{
+#include "ffmpeg/libavformat/avformat.h"
+}
 
 MediaRecord::MediaRecord()
 {
     std::lock_guard<std::mutex> lck(m_mutex);
 
-    m_file = new MediaFileCreate();
-    m_video = new VideoCapture();
-    m_audio = new AudioCapture();
+    m_video = new VideoCapture;
+    m_audio = new AudioCapture;
+    m_file = new MediaFileCreate;
+    m_rtmp = new MediaFileCreate;
+    //m_encode = new MediaEncode;
 }
 
 MediaRecord::~MediaRecord()
 {
     std::lock_guard<std::mutex> lck(m_mutex);
 
-    delete m_file;
     delete m_video;
     delete m_audio;
+    delete m_file;
+    delete m_rtmp;
+    //delete m_encode;
 }
 
-bool MediaRecord::init(const VidCapParam& vid, const AudCapParam& aud, bool videoIsRec, bool audioIsRec)
+bool MediaRecord::init(const VidRawParam& vid, const AudRawParam& aud, bool videoIsRec, bool audioIsRec)
 {
     uninit();
 
@@ -38,7 +48,6 @@ bool MediaRecord::init(const VidCapParam& vid, const AudCapParam& aud, bool vide
         LOG(ERROR) << "video capture thread init failed!";
         return false;
     }
-    
 
     if (m_audioIsRec && !m_audio->init(aud))
     {
@@ -71,38 +80,18 @@ bool MediaRecord::uninit()
     return true;
 }
 
-bool MediaRecord::startRecord(const std::string& filename, const VidOutParam& vid, const AudOutParam& aud)
+bool MediaRecord::startRecord(const VidEncodeParam& vid, const AudEncodeParam& aud)
 {
     std::lock_guard<std::mutex> lck(m_mutex);
 
-    LOG(INFO) << "start record, file:" << filename.c_str();
     if (!m_init)
     {
         LOG(ERROR) << "MediaRecord is not init!";
         return false;
     }
 
-    m_filename = filename;
     m_vOut = vid;
     m_aOut = aud;
-
-    if (!m_file->open(filename, m_vCap, m_vOut, m_aCap, m_aOut))
-    {
-        LOG(ERROR) << "MediaFileCreate create file:" << filename.c_str() << "failed!";
-        return false;
-    }
-
-    if (m_videoIsRec && !m_file->addVideoStream())
-    {
-        LOG(ERROR) << "add video stream failed!";
-        return false;
-    }
-
-    if (m_audioIsRec && !m_file->addAudioStream())
-    {
-        LOG(ERROR) << "add audio stream failed!";
-        return false;
-    }
 
     if (m_audioIsRec)
     {
@@ -112,13 +101,7 @@ bool MediaRecord::startRecord(const std::string& filename, const VidOutParam& vi
     {
         m_video->startCapture();    // 开始捕获视频
     }
-    
-    // 以开始写入头文件为时间戳基准 之前的帧丢弃
-    if (!m_file->writeHead())    // 写入MP4文件头
-    {
-        LOG(ERROR) << "write file head failed!";
-        return false;
-    }
+
     m_start = true;
 
     start();                        // 开启QT线程，写入文件
@@ -129,9 +112,7 @@ bool MediaRecord::startRecord(const std::string& filename, const VidOutParam& vi
 bool MediaRecord::stopRecord()
 {
     m_mutex.lock();
-    LOG(INFO) << "stop record, file:" << m_filename.c_str();
-    m_file->writeTail();        // 写入文件尾
-    m_file->close();            // 关闭文件
+    
     if (m_videoIsRec)
     {
         m_video->stopCapture();     // 停止捕获视频
@@ -141,6 +122,7 @@ bool MediaRecord::stopRecord()
         m_audio->stopCapture();     // 停止捕获音频
     }
     m_start = false;
+
     m_mutex.unlock();
 
     wait();                         // 等待QT线程退出
@@ -148,10 +130,114 @@ bool MediaRecord::stopRecord()
     return true;
 }
 
+bool MediaRecord::startWriteFile(const char * filename)
+{
+    std::lock_guard<std::mutex> lck(m_mutex);
+
+    LOG(INFO) << "start write file:" << filename;
+    if (!m_init)
+    {
+        LOG(ERROR) << "MediaRecord is not init!";
+        return false;
+    }
+    
+    if (!m_file->open(filename, "mp4"))    // 打开写入的文件
+    {
+        LOG(ERROR) << "MediaFileCreate create file:" << filename << " failed!";
+        return false;
+    }
+
+    if (m_videoIsRec && !m_file->setVideoEncode(m_vCap, m_vOut))
+    {
+        LOG(ERROR) << "m_file->setVideoEncode failed!";
+        return false;
+    }
+
+    if (m_audioIsRec && !m_file->setAudioEncode(m_aCap, m_aOut))
+    {
+        LOG(ERROR) << "m_file->setAudioEncode failed!";
+        return false;
+    }
+
+    if (!m_file->writeHead())       // 写入MP4文件头
+    {
+        LOG(ERROR) << "write file head failed!";
+        return false;
+    }
+    m_filename = filename;
+    m_writeFile = true;
+
+    return true;
+}
+
+bool MediaRecord::stopWriteFile()
+{
+    std::lock_guard<std::mutex> lck(m_mutex);
+
+    LOG(INFO) << "stop write file:" << m_filename.c_str();
+    m_file->writeTail();        // 写入文件尾
+    m_file->close();            // 关闭文件
+    m_writeFile = false;
+
+    return true;
+}
+
+bool MediaRecord::startWriteRtmp(const char * url)
+{
+    std::lock_guard<std::mutex> lck(m_mutex);
+
+    LOG(INFO) << "start write rtmp:" << url;
+    if (!m_init)
+    {
+        LOG(ERROR) << "MediaRecord is not init!";
+        return false;
+    }
+
+    if (!m_rtmp->open(url, "flv"))    // 打开写入的文件
+    {
+        LOG(ERROR) << "MediaFileCreate create file:" << url << " failed!";
+        return false;
+    }
+    
+    if (m_videoIsRec && !m_rtmp->setVideoEncode(m_vCap, m_vOut))
+    {
+        LOG(ERROR) << "m_rtmp->setVideoEncode failed!";
+        return false;
+    }
+
+    if (m_audioIsRec && !m_rtmp->setAudioEncode(m_aCap, m_aOut))
+    {
+        LOG(ERROR) << "m_rtmp->setAudioEncode failed!";
+        return false;
+    }
+
+    if (!m_rtmp->writeHead())       // 发送flv文件头
+    {
+        LOG(ERROR) << "send file head failed!";
+        return false;
+    }
+
+    m_url = url;
+    m_writeRtmp = true;
+
+    return true;
+}
+
+bool MediaRecord::stopWriteRtmp()
+{
+    std::lock_guard<std::mutex> lck(m_mutex);
+
+    LOG(INFO) << "stop write rtmp:" << m_url.c_str();
+    m_rtmp->writeTail();        // 写入文件尾
+    m_rtmp->close();            // 关闭文件
+    m_writeRtmp = false;
+
+    return true;
+}
+
 void MediaRecord::run()
 {
     FrameData *frame = nullptr;
-    void *packet = nullptr;
 
     while (m_start)
     {
@@ -162,44 +248,73 @@ void MediaRecord::run()
             break;
         }
 
-        if (m_file->isAudioPtsEarly())
+        if (m_writeFile && !m_writeRtmp)        // 只写入文件
         {
-            frame = m_audioIsRec ? m_audio->getData() : nullptr;
-            if (frame)
+            if (m_audioIsRec && m_file->isAudioPtsEarly())
             {
-                packet = m_file->encodeAudio(frame);
-                if (packet)
+                frame = m_audio->getData();
+                if (frame)
                 {
-                    m_file->writeFrame(packet); // 写入文件
-                    LOG(DEBUG) << "write audio one frame success!";
-                }
-                else
-                {
-                    LOG(ERROR) << "encode audio failed, filename:" << m_filename.c_str();
+                    m_file->writePacket(m_file->encodeToPacket(frame));   // 写入文件
+                    m_audio->freeData(frame);
                 }
             }
-            m_audioIsRec ? m_audio->freeData(frame) : nullptr;
+            else if (m_videoIsRec)
+            {
+                frame = m_video->getData();
+                if (frame)
+                {
+                    m_file->writePacket(m_file->encodeToPacket(frame));
+                    m_video->freeData(frame);
+                }
+            }
         }
-        else
-        {        
-            frame = m_videoIsRec ? m_video->getData() : nullptr;
-            if (frame)
+        else if (!m_writeFile && m_writeRtmp)   // 只推流
+        {
+            if (m_audioIsRec && m_rtmp->isAudioPtsEarly())
             {
-                packet = m_file->encodeVideo(frame);  // 编码为YUV420P
-                if (packet)
+                frame = m_audio->getData();
+                if (frame)
                 {
-                    m_file->writeFrame(packet); // 写入文件
-                    LOG(DEBUG) << "write video one frame success!";
-                }
-                else
-                {
-                    LOG(ERROR) << "encode video failed, filename:" << m_filename.c_str();
+                    m_rtmp->writePacket(m_rtmp->encodeToPacket(frame));   // 写入rtmp流
+                    m_audio->freeData(frame);
                 }
             }
-            m_videoIsRec ? m_video->freeData(frame) : nullptr;
+            else if (m_videoIsRec)
+            {
+                frame = m_video->getData();
+                if (frame)
+                {
+                    m_rtmp->writePacket(m_rtmp->encodeToPacket(frame));
+                    m_video->freeData(frame);
+                }
+            }
+        }
+        else if (m_writeFile && m_writeRtmp)    // 写入文件并推流
+        {
+            if (m_audioIsRec && m_file->isAudioPtsEarly())
+            {
+                frame = m_audio->getData();
+                if (frame)
+                {
+                    m_file->writePacket(m_file->encodeToPacket(frame));   // 写入文件
+                    m_rtmp->writePacket(m_rtmp->encodeToPacket(frame));   // 写入rtmp流
+                    m_audio->freeData(frame);
+                }
+            }
+            else if (m_videoIsRec)
+            {
+                frame = m_video->getData();
+                if (frame)
+                {
+                    m_file->writePacket(m_file->encodeToPacket(frame));
+                    m_rtmp->writePacket(m_rtmp->encodeToPacket(frame));   // 写入rtmp流
+                    m_video->freeData(frame);
+                }
+            }
         }
 
         m_mutex.unlock();
-        msleep(1);  // 等1ms再写入，避免cpu占用率过高
+        usleep(1);  // 等1us再写入，避免cpu占用率过高
     }
 }

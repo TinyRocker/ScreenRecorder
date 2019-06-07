@@ -116,6 +116,7 @@
     <ClCompile Include="AudioCapture.cpp" />
     <ClCompile Include="Capture.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MediaEncode.cpp" />
     <ClCompile Include="MediaFileCreate.cpp" />
     <ClCompile Include="MediaRecord.cpp" />
     <ClCompile Include="MemoryPool.cpp" />
@@ -135,6 +136,7 @@
   <ItemGroup>
     <ClInclude Include="AudioCapture.h" />
     <ClInclude Include="Capture.h" />
+    <ClInclude Include="MediaEncode.h" />
     <ClInclude Include="MediaFileCreate.h" />
     <ClInclude Include="MediaFormat.h" />
     <ClInclude Include="MediaRecord.h" />
