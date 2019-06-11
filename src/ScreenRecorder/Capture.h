@@ -14,7 +14,6 @@ public:
     virtual bool startCapture();
     virtual bool stopCapture();
     FrameData *getData();
-    //void popData();
     void freeData(FrameData *p);
     void clean();
 protected:

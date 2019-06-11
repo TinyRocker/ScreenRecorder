@@ -33,7 +33,7 @@ bool VideoCapture::init(const VidRawParam& param)
     m_fps = param.fps;
     m_bitsize = param.bitsize;
     
-    if (false == m_screenCapture->init(m_width, m_height, param.mode, param.wid))
+    if (false == m_screenCapture->init(m_width, m_height, param.source, param.mode, param.wid))
     {
         LOG(ERROR) << "screen capture init failed!";
         return false;
@@ -64,6 +64,7 @@ bool VideoCapture::uninit()
     }
     m_data_lck.unlock();
 
+    m_screenCapture->deinit();
     m_init = false;
 
     return true;

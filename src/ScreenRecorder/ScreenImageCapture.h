@@ -4,18 +4,20 @@
 #include <d3d9.h>
 
 class QScreen;
+class DXGIManager;
 
 class ScreenImageCapture
 {
 public:
     ScreenImageCapture();
     virtual ~ScreenImageCapture();
-    bool init(int width, int height, VidCapMode mode = VID_CAP_MODE_DX9, int wid = 0);
+    bool init(int width, int height, int source, VidCapMode mode = VID_CAP_MODE_DX9, int wid = 0);
     bool deinit();
     bool captureScreen(char *data);
 protected:
     virtual bool captureScreenWithDx9(char *data);
     virtual bool captureScreenWithQt(char *data);
+    virtual bool captureScreenWithDxgi(char *data);
 private:
     std::mutex  m_lock;     // 线程安全
     VidCapMode  m_mode;     // 抓取屏幕模式
@@ -26,6 +28,10 @@ private:
     IDirect3DDevice9    *m_device = nullptr;    // 显卡设备对象
     IDirect3DSurface9   *m_surface = nullptr;   // 离屏表面
     D3DLOCKED_RECT      *m_rect = nullptr;      // 抓屏数据
+
+    // DXGIManager, DX11 DXGI
+    DXGIManager         *m_dxgi = nullptr;      // dxgi抓屏方式，只支持集显
+    RECT                *m_rcDim;
 
     // QT
     QScreen *m_screen = nullptr;

@@ -23,12 +23,20 @@ private:
     void setAudioIconDisabled(bool);
     void setFileIconDisabled(bool);
     void setLogIconDisabled(bool);
+    void setRtmpIconDisabled(bool);
+    bool startRecord();
+    bool stopRecord();
+    void setIconStatus(bool recording);
 public slots:
     void checkVideoIsRecord();
     void checkAudioIsRecord();
+    void checkLogIsRecord();
+    void checkFileIsRecord();
+    void checkRtmpIsRecord();
     void record();
-    void setLogLevel();
     bool close();
+    void setLogLevel();
+    void setVideoConfig();
 private:
     Ui::ScreenRecorderClass ui;
     bool         m_record = false;

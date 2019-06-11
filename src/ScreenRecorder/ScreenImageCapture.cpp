@@ -1,4 +1,5 @@
 #include "ScreenImageCapture.h"
+#include "DXGIManager.h"
 #include "glog/logging.h"
 
 #include <QScreen>
@@ -10,13 +11,24 @@
 
 ScreenImageCapture::ScreenImageCapture()
 {
+    m_dxgi = new DXGIManager;
+    m_rcDim = new RECT;
+    CoInitialize(NULL);
+    CComPtr<IWICImagingFactory> spWICFactory = NULL;
+    HRESULT hr = spWICFactory.CoCreateInstance(CLSID_WICImagingFactory);
+    if (FAILED(hr))
+    {
+        LOG(ERROR) << "spWICFactory.CoCreateInstance failed! hr=" << hr;
+    }
 }
 
 ScreenImageCapture::~ScreenImageCapture()
 {
+    delete m_dxgi;
+    delete m_rcDim;
 }
 
-bool ScreenImageCapture::init(int width, int height, VidCapMode mode, int wid)
+bool ScreenImageCapture::init(int width, int height, int screen, VidCapMode mode, int wid)
 {
     std::lock_guard<std::mutex> lck(m_lock);
 
@@ -25,7 +37,7 @@ bool ScreenImageCapture::init(int width, int height, VidCapMode mode, int wid)
     m_mode = mode;
     m_wid = wid;
 
-    LOG(INFO) << "init width:" << m_width << ", height:" << m_height << ", mode:" << m_mode;
+    LOG(INFO) << "init width:" << m_width << ", height:" << m_height << "screen:" << screen << ", mode:" << m_mode;
 
     if (VID_CAP_MODE_DX9 == m_mode)
     {
@@ -67,9 +79,20 @@ bool ScreenImageCapture::init(int width, int height, VidCapMode mode, int wid)
         m_rect = (D3DLOCKED_RECT*) new _D3DLOCKED_RECT;
         ZeroMemory(m_rect, sizeof(*m_rect));
     }
+    else if (VID_CAP_MODE_DXGI == m_mode)
+    {
+        m_dxgi->SetCaptureSource((CaptureSource)screen);
+        m_dxgi->GetOutputRect(*m_rcDim);
+    }
     else if (VID_CAP_MODE_QT == m_mode)
     {
         m_screen = QGuiApplication::primaryScreen();
+        //if (CSDesktop == (CaptureSource)screen) m_screen = (QScreen*)QApplication::desktop()->screen();
+        //else if (CSMonitor1 == (CaptureSource)screen) m_screen = (QScreen*)QApplication::desktop()->screen(0);
+        //else if (CSMonitor1 == (CaptureSource)screen) m_screen = (QScreen*)QApplication::desktop()->screen(1);
+
+        if (!m_screen) return false;
+        LOG(INFO) << "width:" << m_width << " height:" << m_height;
     }
     else
     {
@@ -92,6 +115,7 @@ bool ScreenImageCapture::deinit()
     m_screen = nullptr;
     m_wid = 0;
     m_init = false;
+
     //Direct3D 应该被析构掉，未找到对应函数
 
     return true;
@@ -120,6 +144,10 @@ bool ScreenImageCapture::captureScreen(char * data)
     else if (VID_CAP_MODE_QT == m_mode)
     {
         return captureScreenWithQt(data);
+    }
+    else if (VID_CAP_MODE_DXGI == m_mode)
+    {
+        return captureScreenWithDxgi(data);
     }
     else
     {
@@ -158,5 +186,17 @@ bool ScreenImageCapture::captureScreenWithQt(char * data)
     QPixmap pixmap = m_screen->grabWindow(m_wid);
     memcpy(data, pixmap.toImage().bits(), m_width * m_height * 4);
 
+    return true;
+}
+
+bool ScreenImageCapture::captureScreenWithDxgi(char * data)
+{
+    static HRESULT hr;
+    hr = m_dxgi->GetOutputBits((BYTE*)data, *m_rcDim);
+    if (FAILED(hr))
+    {
+        LOG(DETAIL) << "GetOutputBits failed with hr" << hr;
+        return false;
+    }
     return true;
 }

@@ -18,7 +18,6 @@ MediaRecord::MediaRecord()
     m_audio = new AudioCapture;
     m_file = new MediaFileCreate;
     m_rtmp = new MediaFileCreate;
-    //m_encode = new MediaEncode;
 }
 
 MediaRecord::~MediaRecord()
@@ -29,7 +28,6 @@ MediaRecord::~MediaRecord()
     delete m_audio;
     delete m_file;
     delete m_rtmp;
-    //delete m_encode;
 }
 
 bool MediaRecord::init(const VidRawParam& vid, const AudRawParam& aud, bool videoIsRec, bool audioIsRec)
@@ -235,6 +233,40 @@ bool MediaRecord::stopWriteRtmp()
     return true;
 }
 
+bool writeAudioOneFrame(MediaFileCreate *file, AudioCapture *audio)
+{
+    if (!file || !audio)
+    {
+        return false;
+    }
+
+    FrameData *frame = audio->getData();
+    if (!frame)
+    {
+        return false;
+    }
+    file->writePacket(file->encodeToPacket(frame));   // 写入文件
+    audio->freeData(frame);
+    return true;
+}
+
+static bool writeVideoOneFrame(MediaFileCreate *file, VideoCapture *video)
+{
+    if (!file || !video)
+    {
+        return false;
+    }
+
+    FrameData *frame = video->getData();
+    if (!frame)
+    {
+        return false;
+    }
+    file->writePacket(file->encodeToPacket(frame));   // 写入文件
+    video->freeData(frame);
+    return true;
+}
+
 void MediaRecord::run()
 {
     FrameData *frame = nullptr;
@@ -250,22 +282,15 @@ void MediaRecord::run()
 
         if (m_writeFile && !m_writeRtmp)        // 只写入文件
         {
-            if (m_audioIsRec && m_file->isAudioPtsEarly())
+            if (m_audioIsRec && m_file->isAudioPtsEarly())  // 同步音视频时间戳
             {
-                frame = m_audio->getData();
-                if (frame)
-                {
-                    m_file->writePacket(m_file->encodeToPacket(frame));   // 写入文件
-                    m_audio->freeData(frame);
-                }
+                writeAudioOneFrame(m_file, m_audio);
             }
             else if (m_videoIsRec)
             {
-                frame = m_video->getData();
-                if (frame)
+                if (!writeVideoOneFrame(m_file, m_video))   // 若视频写入失败。可能是因为数据未刷新此时不必同步视频 先写入音频
                 {
-                    m_file->writePacket(m_file->encodeToPacket(frame));
-                    m_video->freeData(frame);
+                    writeAudioOneFrame(m_file, m_audio);
                 }
             }
         }
@@ -273,20 +298,13 @@ void MediaRecord::run()
         {
             if (m_audioIsRec && m_rtmp->isAudioPtsEarly())
             {
-                frame = m_audio->getData();
-                if (frame)
-                {
-                    m_rtmp->writePacket(m_rtmp->encodeToPacket(frame));   // 写入rtmp流
-                    m_audio->freeData(frame);
-                }
+                writeAudioOneFrame(m_rtmp, m_audio);
             }
             else if (m_videoIsRec)
             {
-                frame = m_video->getData();
-                if (frame)
+                if (!writeVideoOneFrame(m_rtmp, m_video))
                 {
-                    m_rtmp->writePacket(m_rtmp->encodeToPacket(frame));
-                    m_video->freeData(frame);
+                    writeAudioOneFrame(m_rtmp, m_audio);
                 }
             }
         }
@@ -310,6 +328,16 @@ void MediaRecord::run()
                     m_file->writePacket(m_file->encodeToPacket(frame));
                     m_rtmp->writePacket(m_rtmp->encodeToPacket(frame));   // 写入rtmp流
                     m_video->freeData(frame);
+                }
+                else if (m_audioIsRec)          // 若获取视频失败。可能是因为数据未刷新此时不必同步视频 先写入音频
+                {
+                    frame = m_audio->getData();
+                    if (frame)
+                    {
+                        m_file->writePacket(m_file->encodeToPacket(frame));   // 写入文件
+                        m_rtmp->writePacket(m_rtmp->encodeToPacket(frame));   // 写入rtmp流
+                        m_audio->freeData(frame);
+                    }
                 }
             }
         }

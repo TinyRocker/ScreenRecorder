@@ -23,7 +23,7 @@ public:
     bool stopWriteFile();
     bool startWriteRtmp(const char *url);
     bool stopWriteRtmp();
-    
+
 protected:
     virtual void run();
 

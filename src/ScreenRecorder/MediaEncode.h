@@ -54,6 +54,6 @@ private:
     int64_t m_timestamp = 0;    // 开始编码时的时间戳
     int64_t m_vpts = 0;         // 视频的pts
     int64_t m_apts = 0;         // 音频的pts
-    int     m_vThdNum = 2;      // 视频编码线程数
-    int     m_aThdNum = 1;      // 音频编码线程数
+    int     m_vThdNum = std::thread::hardware_concurrency();      // 视频编码线程数
+    int     m_aThdNum = 2;      // 音频编码线程数
 };

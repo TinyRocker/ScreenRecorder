@@ -115,6 +115,7 @@
   <ItemGroup>
     <ClCompile Include="AudioCapture.cpp" />
     <ClCompile Include="Capture.cpp" />
+    <ClCompile Include="DXGIManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MediaEncode.cpp" />
     <ClCompile Include="MediaFileCreate.cpp" />
@@ -136,6 +137,7 @@
   <ItemGroup>
     <ClInclude Include="AudioCapture.h" />
     <ClInclude Include="Capture.h" />
+    <ClInclude Include="DXGIManager.h" />
     <ClInclude Include="MediaEncode.h" />
     <ClInclude Include="MediaFileCreate.h" />
     <ClInclude Include="MediaFormat.h" />

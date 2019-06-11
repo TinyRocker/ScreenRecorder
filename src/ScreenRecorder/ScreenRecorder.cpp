@@ -4,6 +4,7 @@
 #include <QScreen>
 #include <QDesktopWidget> 
 #include <QMouseEvent>
+#include <QMessageBox>
 
 ScreenRecorder::ScreenRecorder(QWidget *parent)
     : QWidget(parent)
@@ -18,7 +19,10 @@ ScreenRecorder::ScreenRecorder(QWidget *parent)
     ui.label_recordingAudio->hide();
     ui.label_recordingVideo->setStyleSheet("border-image:url(:/ScreenRecorder/Resources/video_recorder_32px.ico)");
     ui.label_recordingAudio->setStyleSheet("border-image:url(:/ScreenRecorder/Resources/audio_recorder_32px.ico)");
-    
+    setVideoConfig();
+    ui.checkRtmp->setChecked(false);
+    setRtmpIconDisabled(true);
+
     startTimer(500);
 }
 
@@ -37,7 +41,7 @@ void ScreenRecorder::timerEvent(QTimerEvent * event)
     int h = es / 3600;
     int m = (es % 3600) / 60;
     int s = es % 60;
-    char buf[32] = { 0 };
+    static char buf[32] = { 0 };
 
     sprintf(buf, "%02d:%02d:%02d", h, m, s);
     ui.label_time->setText(buf);
@@ -75,70 +79,37 @@ void ScreenRecorder::mouseMoveEvent(QMouseEvent * event)
     }
 }
 
-void ScreenRecorder::setVideoIconDisabled(bool disable)
+void ScreenRecorder::setVideoIconDisabled(bool stat)
 {
-    if (disable)
-    {
-        ui.lineEdit_width->setDisabled(true);
-        ui.lineEdit_height->setDisabled(true);
-        ui.lineEdit_fps->setDisabled(true);
-        ui.radioButton_dx9->setDisabled(true);
-        ui.radioButton_qt->setDisabled(true);
-        ui.comboBox_bitrate_video->setDisabled(true);
-    }
-    else
-    {
-        ui.lineEdit_width->setEnabled(true);
-        ui.lineEdit_height->setEnabled(true);
-        ui.lineEdit_fps->setEnabled(true);
-        ui.radioButton_dx9->setEnabled(true);
-        ui.radioButton_qt->setEnabled(true);
-        ui.comboBox_bitrate_video->setEnabled(true);
-    }
+    ui.lineEdit_width->setDisabled(stat);
+    ui.lineEdit_height->setDisabled(stat);
+    ui.lineEdit_fps->setDisabled(stat);
+    ui.comboBox_captureMode->setDisabled(stat);
+    ui.comboBox_screen->setDisabled(stat);
+    ui.comboBox_bitrate_video->setDisabled(stat);
 }
 
-void ScreenRecorder::setAudioIconDisabled(bool disable)
+void ScreenRecorder::setAudioIconDisabled(bool stat)
 {
-    if (disable)
-    {
-        ui.lineEdit_channels->setDisabled(true);
-        ui.lineEdit_samplerate->setDisabled(true);
-        ui.comboBox_bitrate_audio->setDisabled(true);
-    }
-    else
-    {
-        ui.lineEdit_channels->setEnabled(true);
-        ui.lineEdit_samplerate->setEnabled(true);
-        ui.comboBox_bitrate_audio->setEnabled(true);
-    }
+    ui.lineEdit_channels->setDisabled(stat);
+    ui.lineEdit_samplerate->setDisabled(stat);
+    ui.comboBox_bitrate_audio->setDisabled(stat);
 }
 
-void ScreenRecorder::setFileIconDisabled(bool disable)
+void ScreenRecorder::setFileIconDisabled(bool stat)
 {
-    if (disable)
-    {
-        ui.lineEdit_fileSavePath->setDisabled(true);
-        ui.lineEdit_fileSavePrefix->setDisabled(true);
-    }
-    else
-    {
-        ui.lineEdit_fileSavePath->setEnabled(true);
-        ui.lineEdit_fileSavePrefix->setEnabled(true);
-    }
+    ui.lineEdit_fileSavePath->setDisabled(stat);
+    ui.lineEdit_fileSavePrefix->setDisabled(stat);
 }
 
-void ScreenRecorder::setLogIconDisabled(bool disable)
+void ScreenRecorder::setLogIconDisabled(bool stat)
 {
-    if (disable)
-    {
-        ui.lineEdit_logSavePath->setDisabled(true);
-        ui.lineEdit_logSavePrefix->setDisabled(true);
-    }
-    else
-    {
-        ui.lineEdit_logSavePath->setEnabled(true);
-        ui.lineEdit_logSavePrefix->setEnabled(true);
-    }
+    ui.lineEdit_logSavePath->setDisabled(stat);
+}
+
+void ScreenRecorder::setRtmpIconDisabled(bool stat)
+{
+    ui.lineEdit_rtmpPath->setDisabled(stat);
 }
 
 void ScreenRecorder::checkVideoIsRecord()
@@ -165,123 +136,214 @@ void ScreenRecorder::checkAudioIsRecord()
     }
 }
 
-void ScreenRecorder::record()
+void ScreenRecorder::checkLogIsRecord()
 {
-    if (!m_record)
+    if (!ui.checkLog->isChecked())
     {
-        // 开始录制
-        QString filefullname = ui.lineEdit_fileSavePath->text();
-        filefullname += ui.lineEdit_fileSavePrefix->text();
-        filefullname += QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
-        filefullname += ".mp4";
-
-        QString logPrefix = ui.lineEdit_logSavePath->text();
-        logPrefix += ui.lineEdit_logSavePrefix->text();
-        logPrefix += ui.comboBox_logLevel->currentText();
-
-        // 开始日志记录
-        google::InitGoogleLogging("ScreenRecorder"); // 初始化glog
-        google::SetLogDestination(google::GLOG_DETAIL, logPrefix.toLocal8Bit());
-        FLAGS_minloglevel = ui.comboBox_logLevel->currentIndex();
-        FLAGS_logbufsecs = 0;
-
-        int out_width = ui.lineEdit_width->text().toInt();
-        int out_height = ui.lineEdit_height->text().toInt();
-        int out_fps = ui.lineEdit_fps->text().toInt();
-        int out_channels = ui.lineEdit_channels->text().toInt();
-        int out_samplerate = ui.lineEdit_samplerate->text().toInt();
-
-        bool audioIsRec = ui.checkAudio->isChecked();
-        bool videoIsRec = ui.checkVideo->isChecked();
-        if (!audioIsRec && !videoIsRec)
-        {
-            return;
-        }
-
-        VidCapMode mode = VID_CAP_MODE_DX9;
-        if (ui.radioButton_dx9->isChecked())
-        {
-            mode = VID_CAP_MODE_DX9;
-        }
-        else if (ui.radioButton_qt->isChecked())
-        {
-            mode = VID_CAP_MODE_QT;
-        }
-
-        int width = QGuiApplication::primaryScreen()->size().width();
-        int height = QGuiApplication::primaryScreen()->size().height();
-        
-        int vbitrate = ui.comboBox_bitrate_video->currentText().toInt() * 1000;
-        int abitrate = ui.comboBox_bitrate_audio->currentText().toInt() * 1000;
-
-        WId wid = QApplication::desktop()->winId();
-        VidRawParam vidrec = { width, height, out_fps, 4, VID_PIX_FMT_BGRA, wid, mode };
-        AudRawParam audrec = { out_channels, out_samplerate, 16, 1024, AUD_CODEC_ID_PCM, AUD_SMP_FMT_S16 };
-
-        VidEncodeParam vidsws = { out_width, out_height, out_fps, vbitrate, VID_CODEC_ID_H264, VID_PIX_FMT_YUV420P };
-        AudEncodeParam audswr = { out_channels, out_samplerate , abitrate, AUD_CODEC_ID_AAC, AUD_SMP_FMT_FLATP };
-
-        if (false == m_mediaRecord->init(vidrec, audrec, videoIsRec, audioIsRec))
-        {
-            LOG(ERROR) << "m_mediaRecord init failed!";
-            return;
-        }
-
-        if (false == m_mediaRecord->startRecord(vidsws, audswr))
-        {
-            LOG(ERROR) << "m_mediaRecord startRecord failed!";
-            return;
-        }
-        
-        m_record = true;
-        m_time.restart();
-
-        m_mediaRecord->startWriteFile(filefullname.toLocal8Bit().toStdString().c_str());
-        m_mediaRecord->startWriteRtmp("rtmp://192.168.1.111/live");
-
-        ui.record->setStyleSheet("border-image:url(:/ScreenRecorder/Resources/stop_72px.ico)");
-        if (videoIsRec)
-        {
-            ui.label_recordingVideo->show();
-        }
-        if (audioIsRec)
-        {
-            ui.label_recordingAudio->show();
-        }
-        ui.checkVideo->setDisabled(true);
-        ui.checkAudio->setDisabled(true);
-        setVideoIconDisabled(true);
-        setAudioIconDisabled(true);
-        setFileIconDisabled(true);
         setLogIconDisabled(true);
     }
     else
     {
-        // 停止录制
-        m_mediaRecord->stopRecord();
-        m_mediaRecord->stopWriteFile();
-        m_mediaRecord->stopWriteRtmp();
-        m_mediaRecord->uninit();
-
-        m_record = false;
-        ui.record->setStyleSheet("border-image:url(:/ScreenRecorder/Resources/start_72px.ico)");
-        ui.label_recordingVideo->hide();
-        ui.label_recordingAudio->hide();
-        ui.checkVideo->setEnabled(true);
-        ui.checkAudio->setEnabled(true);
-        setVideoIconDisabled(false);
-        setAudioIconDisabled(false);
-        setFileIconDisabled(false);
         setLogIconDisabled(false);
-
-        // 停止日志记录
-        google::ShutdownGoogleLogging();
     }
 }
 
-void ScreenRecorder::setLogLevel()
+void ScreenRecorder::checkFileIsRecord()
 {
-    FLAGS_minloglevel = ui.comboBox_logLevel->currentIndex();
+    if (!ui.checkFile->isChecked())
+    {
+        setFileIconDisabled(true);
+    }
+    else
+    {
+        setFileIconDisabled(false);
+    }
+}
+
+void ScreenRecorder::checkRtmpIsRecord()
+{
+    if (!ui.checkRtmp->isChecked())
+    {
+        setRtmpIconDisabled(true);
+    }
+    else
+    {
+        setRtmpIconDisabled(false);
+    }
+}
+
+bool ScreenRecorder::startRecord()
+{
+    // 开始日志记录
+    if (ui.checkLog->isChecked())
+    {
+        QString logPrefix = ui.lineEdit_logSavePath->text();
+        logPrefix += ui.comboBox_logLevel->currentText();
+        google::InitGoogleLogging("ScreenRecorder"); // 初始化glog
+        google::SetLogDestination(google::GLOG_DETAIL, logPrefix.toLocal8Bit());
+        FLAGS_minloglevel = ui.comboBox_logLevel->currentIndex();
+        FLAGS_logbufsecs = 0;
+    }
+
+    int out_width = ui.lineEdit_width->text().toInt();
+    int out_height = ui.lineEdit_height->text().toInt();
+    int out_fps = ui.lineEdit_fps->text().toInt();
+    int out_channels = ui.lineEdit_channels->text().toInt();
+    int out_samplerate = ui.lineEdit_samplerate->text().toInt();
+    bool audioIsRec = ui.checkAudio->isChecked();
+    bool videoIsRec = ui.checkVideo->isChecked();
+    if (!audioIsRec && !videoIsRec)
+    {
+        return false;
+    }
+
+    VidCapMode mode = VID_CAP_MODE_DXGI;
+    if (ui.comboBox_captureMode->currentText() == "DXGI") mode = VID_CAP_MODE_DXGI;
+    else if (ui.comboBox_captureMode->currentText() == "DX9") mode = VID_CAP_MODE_DX9;
+    else if (ui.comboBox_captureMode->currentText() == "QT") mode = VID_CAP_MODE_QT;
+
+    CaptureSource screen;
+    WId wid = 0;
+    int width;
+    int height;
+    if (ui.comboBox_screen->currentText() == "Desktop")
+    {
+        screen = CSDesktop;
+        wid = QApplication::desktop()->winId();
+        width = QApplication::desktop()->width();
+        height = QApplication::desktop()->height();
+    }
+    if (ui.comboBox_screen->currentText() == "Monitor1")
+    {
+        screen = CSMonitor1;
+        wid = QApplication::desktop()->screen(0)->winId();
+        width = QApplication::desktop()->screenGeometry(0).width();
+        height = QApplication::desktop()->screenGeometry(0).height();
+    }
+    if (ui.comboBox_screen->currentText() == "Monitor2")
+    {
+        screen = CSMonitor2;
+        wid = QApplication::desktop()->screen(1)->winId();
+        width = QApplication::desktop()->screenGeometry(1).width();
+        height = QApplication::desktop()->screenGeometry(1).height();
+    }
+
+    int vbitrate = ui.comboBox_bitrate_video->currentText().toInt() * 1000;
+    int abitrate = ui.comboBox_bitrate_audio->currentText().toInt() * 1000;
+
+    VidRawParam vidrec = { width, height, out_fps, 4, screen, VID_PIX_FMT_BGRA, wid, mode };
+    AudRawParam audrec = { out_channels, out_samplerate, 16, 1024, AUD_CODEC_ID_PCM, AUD_SMP_FMT_S16 };
+
+    VidEncodeParam vidsws = { out_width, out_height, out_fps, vbitrate, VID_CODEC_ID_H264, VID_PIX_FMT_YUV420P };
+    AudEncodeParam audswr = { out_channels, out_samplerate , abitrate, AUD_CODEC_ID_AAC, AUD_SMP_FMT_FLATP };
+
+    if (false == m_mediaRecord->init(vidrec, audrec, videoIsRec, audioIsRec))
+    {
+        LOG(ERROR) << "m_mediaRecord init failed!";
+        return false;
+    }
+
+    if (false == m_mediaRecord->startRecord(vidsws, audswr))
+    {
+        LOG(ERROR) << "m_mediaRecord startRecord failed!";
+        return false;
+    }
+
+    // 开始录制到文件
+    if (ui.checkFile->isChecked())
+    {
+        QString filefullname = ui.lineEdit_fileSavePath->text();
+        filefullname += ui.lineEdit_fileSavePrefix->text();
+        filefullname += QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
+        filefullname += ".mp4";
+        if (!m_mediaRecord->startWriteFile(filefullname.toLocal8Bit().toStdString().c_str()))
+        {
+            LOG(ERROR) << "startWriteFile failed!";
+            return false;
+        }
+    }
+
+    // 开始推流
+    if (ui.checkRtmp->isChecked())
+    {
+        QString rtmpurl = ui.lineEdit_rtmpPath->text();
+        if (!m_mediaRecord->startWriteRtmp(rtmpurl.toStdString().c_str()))
+        {
+            LOG(ERROR) << "startWriteRtmp failed!";
+            return false;
+        }
+    }
+    return true;
+}
+
+bool ScreenRecorder::stopRecord()
+{
+    // 停止录制
+    m_mediaRecord->stopRecord();
+    if (ui.checkFile->isChecked()) m_mediaRecord->stopWriteFile();
+    if (ui.checkRtmp->isChecked()) m_mediaRecord->stopWriteRtmp();
+    m_mediaRecord->uninit();
+    
+    if (ui.checkLog->isChecked())
+    {
+        // 停止日志记录
+        google::ShutdownGoogleLogging();
+    }
+    return true;
+}
+
+void ScreenRecorder::setIconStatus(bool recording)
+{
+    // 修改ui图标
+    if (recording)
+    {
+        ui.record->setStyleSheet("border-image:url(:/ScreenRecorder/Resources/stop_72px.ico)");
+        if (ui.checkVideo->isChecked()) ui.label_recordingVideo->show();
+        if (ui.checkAudio->isChecked()) ui.label_recordingAudio->show();
+    }
+    else
+    {
+        ui.record->setStyleSheet("border-image:url(:/ScreenRecorder/Resources/start_72px.ico)");
+        ui.label_recordingVideo->hide();
+        ui.label_recordingAudio->hide();
+    }
+    
+    ui.checkVideo->setDisabled(recording);
+    ui.checkAudio->setDisabled(recording);
+    ui.checkLog->setDisabled(recording);
+    ui.checkFile->setDisabled(recording);
+    ui.checkRtmp->setDisabled(recording);
+
+    setVideoIconDisabled(recording);
+    setAudioIconDisabled(recording);
+    setFileIconDisabled(recording);
+    setLogIconDisabled(recording);
+    setRtmpIconDisabled(recording);
+}
+
+void ScreenRecorder::record()
+{
+    if (!m_record)
+    {
+        if (!startRecord())
+        {
+            stopRecord();
+            QMessageBox::about(this, "error", "startRecord failed!");
+            return;
+        }
+        m_record = true;
+        m_time.restart();
+    }
+    else
+    {
+        if (!stopRecord())
+        {
+            QMessageBox::about(this, "error", "stopRecord failed!");
+            return;
+        }
+        m_record = false;
+    }
+    setIconStatus(m_record);
 }
 
 bool ScreenRecorder::close()
@@ -291,4 +353,32 @@ bool ScreenRecorder::close()
         record();
     }
     return QWidget::close();
+}
+
+void ScreenRecorder::setLogLevel()
+{
+    FLAGS_minloglevel = ui.comboBox_logLevel->currentIndex();
+}
+
+void ScreenRecorder::setVideoConfig()
+{
+    int width = 0;
+    int height = 0;
+    if (ui.comboBox_screen->currentText() == "Desktop")
+    {
+        width = QApplication::desktop()->width();
+        height = QApplication::desktop()->height();
+    }
+    if (ui.comboBox_screen->currentText() == "Monitor1")
+    {
+        width = QApplication::desktop()->screenGeometry(0).width();
+        height = QApplication::desktop()->screenGeometry(0).height();
+    }
+    if (ui.comboBox_screen->currentText() == "Monitor2")
+    {
+        width = QApplication::desktop()->screenGeometry(1).width();
+        height = QApplication::desktop()->screenGeometry(1).height();
+    }
+    ui.lineEdit_width->setText(QString::number(width));
+    ui.lineEdit_height->setText(QString::number(height));
 }

@@ -76,13 +76,6 @@ FrameData * Capture::getData()
     return data;
 }
 
-//void Capture::popData()
-//{
-//    std::lock_guard<std::mutex> lck(m_data_lck);
-//
-//    m_frames.pop();
-//}
-
 void Capture::freeData(FrameData * p)
 {
     std::lock_guard<std::mutex> lck(m_data_lck);
@@ -138,7 +131,7 @@ void Capture::run()
             m_mempool->freeMemory(frame);
             frame = nullptr;
             m_oper_lck.unlock();
-            LOG(ERROR) << "captureData failed!";
+            LOG(DETAIL) << "captureData failed!";
             msleep(1);
             continue;
         }

@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include "DXGIManager.h"
 
 // 数值对应ffmpeg version 4.1.3
 
@@ -21,6 +22,7 @@ enum VidCapMode
 {
     VID_CAP_MODE_NONE = 0,
     VID_CAP_MODE_DX9,
+    VID_CAP_MODE_DXGI,
     VID_CAP_MODE_QT,
     VID_CAP_MODE_CNT
 };
@@ -43,9 +45,10 @@ struct VidRawParam
     int height;
     int fps;
     int bitsize;
+    CaptureSource source;
     VidPixFmt format;
     int wid = 0;
-    VidCapMode mode = VID_CAP_MODE_DX9;
+    VidCapMode mode;
 };
 
 struct VidEncodeParam
